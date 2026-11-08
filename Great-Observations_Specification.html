@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InfraWatch 2.0 Specification</title>
+<style>
+:root {
+  --bg: #fbfbf9;
+  --fg: #1b1f23;
+  --muted: #5b6570;
+  --line: #e1e4e8;
+  --line-strong: #c4cad2;
+  --card: #ffffff;
+  --soft: #f3f5f7;
+  --accent: #0b5cad;
+  --accent-soft: #e6f0fa;
+  --ok: #1a7f4b;
+  --warn: #9a4a07;
+  --warn-soft: #fdf1e3;
+  --p1: #0b5cad;
+  --p2: #6b3fa0;
+  --p3: #8a6200;
+  --rel: #1a7f4b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171a;
+    --fg: #e6e9ec;
+    --muted: #9aa5b1;
+    --line: #2b3137;
+    --line-strong: #404851;
+    --card: #1b1f23;
+    --soft: #20252a;
+    --accent: #6cb2ff;
+    --accent-soft: #172736;
+    --ok: #4cc38a;
+    --warn: #f0a35a;
+    --warn-soft: #2b2218;
+    --p1: #6cb2ff;
+    --p2: #b999e6;
+    --p3: #e0b24d;
+    --rel: #4cc38a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171a; --fg: #e6e9ec; --muted: #9aa5b1; --line: #2b3137; --line-strong: #404851;
+  --card: #1b1f23; --soft: #20252a; --accent: #6cb2ff; --accent-soft: #172736; --ok: #4cc38a;
+  --warn: #f0a35a; --warn-soft: #2b2218; --p1: #6cb2ff; --p2: #b999e6; --p3: #e0b24d; --rel: #4cc38a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+nav.toc {
+  position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+  padding: 2rem 1rem 2rem 1.5rem; border-right: 1px solid var(--line); font-size: 0.875rem;
+}
+nav.toc .brand { font-weight: 700; font-size: 1rem; margin-bottom: 1rem; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; }
+nav.toc li { margin: 0.15rem 0; }
+nav.toc a { color: var(--muted); text-decoration: none; display: block; padding: 0.2rem 0.4rem; border-radius: 4px; }
+nav.toc a:hover { color: var(--accent); background: var(--accent-soft); }
+main { padding: 2.5rem 1.5rem 4rem 2.5rem; max-width: 880px; }
+header.doc h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 0.4rem; }
+header.doc .sub { color: var(--muted); font-size: 1.05rem; margin: 0 0 1rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.25rem; }
+.meta strong { color: var(--fg); font-weight: 600; }
+.banner {
+  background: var(--warn-soft); border: 1px solid var(--warn); border-left-width: 4px; color: var(--fg);
+  padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.92rem; margin: 1rem 0 2rem;
+}
+h2 { font-size: 1.5rem; margin: 3rem 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15rem; margin: 2rem 0 0.5rem; }
+h4 { font-size: 1rem; margin: 1.25rem 0 0.35rem; }
+p { margin: 0.6rem 0; }
+ul, ol { padding-left: 1.4rem; margin: 0.5rem 0; }
+li { margin: 0.25rem 0; }
+code { font: 0.88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--soft); padding: 0.1em 0.35em; border-radius: 4px; }
+.table-wrap { overflow-x: auto; margin: 0.75rem 0 1.25rem; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; background: var(--card); }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--soft); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+td.c, th.c { text-align: center; }
+.callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 0.7rem 1rem; border-radius: 6px; margin: 1rem 0; font-size: 0.93rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0.9rem 1.1rem; }
+.card h4 { margin-top: 0; }
+.tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; padding: 0.05rem 0.4rem; border-radius: 999px; border: 1px solid currentColor; vertical-align: 1px; }
+.tag.p1 { color: var(--p1); } .tag.p2 { color: var(--p2); } .tag.p3 { color: var(--p3); } .tag.rel { color: var(--rel); }
+figure { margin: 1.25rem 0; }
+figure svg { width: 100%; height: auto; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+figcaption { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+svg .node { fill: var(--card); stroke: var(--line-strong); stroke-width: 1.2; }
+svg .container { fill: var(--soft); stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.2; }
+svg text { fill: var(--fg); font: 12px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+svg text.cap { fill: var(--muted); font-size: 10.5px; }
+svg text.head { font-weight: 700; font-size: 11px; fill: var(--muted); letter-spacing: 0.04em; }
+svg .arrow { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+svg .dashed { stroke-dasharray: 5 4; }
+.progress { position: sticky; top: 0; z-index: 5; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 0.9rem; margin: 1rem 0; display: flex; align-items: center; gap: 0.8rem; font-size: 0.9rem; }
+.progress .bar { flex: 1; height: 8px; background: var(--soft); border-radius: 999px; overflow: hidden; }
+.progress .bar span { display: block; height: 100%; width: 0; background: var(--ok); transition: width 0.2s; }
+.progress button { font: inherit; font-size: 0.8rem; background: var(--card); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 6px; padding: 0.2rem 0.6rem; cursor: pointer; }
+ul.checks { list-style: none; padding: 0; }
+ul.checks li { border: 1px solid var(--line); background: var(--card); border-radius: 6px; margin: 0.4rem 0; }
+ul.checks label { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.55rem 0.8rem; cursor: pointer; }
+ul.checks input { margin-top: 0.3rem; flex: none; }
+ul.checks .id { font: 600 0.8rem ui-monospace, Menlo, Consolas, monospace; color: var(--muted); flex: none; min-width: 3.2rem; margin-top: 0.15rem; }
+ul.checks li:has(input:checked) { background: var(--soft); }
+ul.checks li:has(input:checked) .txt { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+.gate-title { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.gate-title .count { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 1rem 1.25rem; }
+  main { padding: 1.5rem 1.25rem 3rem; }
+  .grid2 { grid-template-columns: 1fr; }
+}
+@media print {
+  nav.toc, .progress { display: none; }
+  .layout { display: block; }
+  main { padding: 0; max-width: none; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  h2 { break-after: avoid; }
+  ul.checks li, .card, table { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">InfraWatch 2.0</div>
+  <ol>
+    <li><a href="#summary">1. Summary</a></li>
+    <li><a href="#business">2. Business case</a></li>
+    <li><a href="#scope">3. Scope</a></li>
+    <li><a href="#decisions">4. Decision register</a></li>
+    <li><a href="#roles">5. Roles and permissions</a></li>
+    <li><a href="#functional">6. Functional specification</a></li>
+    <li><a href="#architecture">7. Architecture</a></li>
+    <li><a href="#nfr">8. Non-functional requirements</a></li>
+    <li><a href="#phasing">9. Phasing</a></li>
+    <li><a href="#checks">10. Acceptance checks</a></li>
+    <li><a href="#defaults">11. Defaults and open items</a></li>
+    <li><a href="#risks">12. Risks</a></li>
+    <li><a href="#glossary">13. Glossary</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="doc">
+  <h1>InfraWatch 2.0</h1>
+  <p class="sub">Unified observability, incident management and AI-assisted root cause analysis: product and engineering specification</p>
+  <div class="meta">
+    <span><strong>Version</strong> 0.1 (draft)</span>
+    <span><strong>Date</strong> 9 November 2026</span>
+    <span><strong>Status</strong> Specification, pre-implementation</span>
+    <span><strong>Working title</strong> InfraWatch 2.0</span>
+  </div>
+  <div class="banner"><strong>Status notice.</strong> This document specifies a system that has not yet been built. Every capability described here is a requirement or a design decision, not an existing feature. The acceptance checks in section 10 define when each requirement is considered met.</div>
+</header>
+
+<section id="summary">
+<h2>1. Summary</h2>
+<p>In most organisations, observability tooling (metrics, logs, dashboards) and IT service management tooling (incident tickets, assignment, post-incident review) are separate products used by separate people. An engineer who sees a problem in a dashboard must manually open a ticket, copy context into it, find the right team, and later reconstruct what happened. Context is lost, response is slower, and the knowledge gained in each incident rarely reaches the next engineer who faces something similar.</p>
+<p>InfraWatch 2.0 combines these into one application with four connected stages:</p>
+<ol>
+  <li><strong>Observe.</strong> A shared, read-only view of system health (infrastructure metrics, application metrics, logs, change events) available to all users.</li>
+  <li><strong>Raise.</strong> Production Support reviews an alert-generated draft, or raises an incident directly, attaching observability data and any other evidence.</li>
+  <li><strong>Collaborate.</strong> The incident is visible in the app and emailed to the owning team's group address with the on-call engineer in CC. Teams work in parallel against a seven-state progress bar, and each team lead assigns work within their team.</li>
+  <li><strong>Learn.</strong> No incident can be closed until a runbook has been written, reviewed and approved. Approved runbooks form the knowledge base from which an AI layer predicts probable root causes for future incidents.</li>
+</ol>
+<p>The platform is built from scratch with its own collector agent, storage and user interface. It is not layered on Prometheus, Grafana or Loki. ServiceNow integration is optional and secondary: the product has its own ticketing and can synchronise with a ServiceNow instance through the Table API.</p>
+<div class="callout"><strong>Primary objective.</strong> A demonstrable, end-to-end portfolio project that shows full-stack, DevOps and applied-AI capability. The architecture keeps the path to a real product open, but the first release is optimised for a credible, reproducible demonstration at small scale.</div>
+</section>
+
+<section id="business">
+<h2>2. Business case</h2>
+<h3>2.1 Problem</h3>
+<ul>
+  <li><strong>Context loss at hand-off.</strong> Incident tickets are created by hand, outside the tool where the problem was observed.</li>
+  <li><strong>Slow acknowledgement and resolution.</strong> Routing, notification and escalation depend on human memory and manual steps.</li>
+  <li><strong>Alert fatigue and clerical load.</strong> On-call engineers spend incident time on ticket hygiene rather than diagnosis.</li>
+  <li><strong>Lost institutional knowledge.</strong> Post-incident learning is inconsistent, unstructured, or never written. When people leave, the knowledge leaves with them.</li>
+  <li><strong>Audit exposure.</strong> Regulated environments must show that each significant event produced a tracked, owned and reviewed incident.</li>
+</ul>
+<h3>2.2 Value proposition</h3>
+<div class="grid2">
+  <div class="card"><h4>Operational</h4><ul>
+    <li>One place to see health, raise, assign and resolve.</li>
+    <li>Pre-filled incidents with frozen evidence.</li>
+    <li>Defined SLAs, escalation and on-call rotation.</li>
+  </ul></div>
+  <div class="card"><h4>Knowledge</h4><ul>
+    <li>Mandatory, structured runbooks with a controlled root cause taxonomy.</li>
+    <li>Similar-incident retrieval at the moment of creation.</li>
+    <li>Ranked root cause suggestions with cited evidence.</li>
+  </ul></div>
+  <div class="card"><h4>Governance</h4><ul>
+    <li>Caller-confirmed closure and rejection path.</li>
+    <li>Immutable audit trail of every change.</li>
+    <li>Role-based visibility, including stakeholder-safe views.</li>
+  </ul></div>
+  <div class="card"><h4>Measurable outcomes</h4><ul>
+    <li>Mean time to acknowledge and resolve.</li>
+    <li>Duplicate and repeat-incident rates.</li>
+    <li>Top-k root cause prediction accuracy.</li>
+  </ul></div>
+</div>
+<h3>2.3 Market positioning</h3>
+<p>Several commercial observability vendors offer ServiceNow integrations, and the AIOps category (event correlation, noise reduction, probable-cause analysis) is occupied by established products. InfraWatch 2.0 does not claim a new category. Its position is a single, integrated workflow that joins telemetry, ticketing, enforced post-incident learning and retrieval-grounded AI, in a form that is transparent, self-hostable and demonstrable. The differentiating ideas are the closure gate (no close without an approved runbook), the controlled root cause taxonomy that turns runbooks into clean training labels, and shadow-mode evaluation that makes AI accuracy measurable before it is trusted.</p>
+<h3>2.4 Portfolio value</h3>
+<p>The project exercises backend and API design, real-time systems, data modelling for time series, DevOps (containerisation, CI, later cloud deployment), security and access control, and applied AI (retrieval, evaluation, human-in-the-loop). Resume claims must come from reproducible scripts in the repository (check G10.3), not from estimates.</p>
+</section>
+
+<section id="scope">
+<h2>3. Scope</h2>
+<div class="grid2">
+  <div class="card"><h4>In scope</h4><ul>
+    <li>Collector agent and demo application with fault injection</li>
+    <li>Metrics, logs and change-event ingestion and storage</li>
+    <li>Prebuilt dashboards and a simple panel builder</li>
+    <li>Static, anomaly-based and AI-suggested alert rules</li>
+    <li>Incident lifecycle, SLA timers, parallel team tasks</li>
+    <li>Attachments, group email, on-call rotation, escalation</li>
+    <li>Runbook authoring, review and controlled taxonomy</li>
+    <li>Similar incidents, ranked RCA, runbook and comms drafts</li>
+    <li>Shadow-mode evaluation, feedback, offline benchmark</li>
+    <li>Optional two-way ServiceNow synchronisation</li>
+    <li>Local accounts, RBAC, immutable audit log</li>
+    <li>Docker Compose deployment, tests and CI</li>
+  </ul></div>
+  <div class="card"><h4>Out of scope (initial release)</h4><ul>
+    <li>Full Grafana-style dashboard builder (Phase 3)</li>
+    <li>Distributed tracing ingestion (candidate for Phase 3)</li>
+    <li>Multi-tenancy and per-tenant isolation</li>
+    <li>Enterprise SSO (Keycloak or OAuth)</li>
+    <li>SMS, voice and chat-platform notifications</li>
+    <li>Cloud deployment (follows the Compose release)</li>
+    <li>Load testing beyond the demo scale target</li>
+    <li>Training or fine-tuning a proprietary model</li>
+  </ul></div>
+</div>
+</section>
+
+<section id="decisions">
+<h2>4. Decision register</h2>
+<p>These decisions were made during requirements gathering and are treated as fixed unless explicitly revisited.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Area</th><th>Decision</th></tr></thead>
+  <tbody>
+    <tr><td>Purpose</td><td>Portfolio-first, with a product path kept open</td></tr>
+    <tr><td>Backend</td><td>Python with FastAPI</td></tr>
+    <tr><td>Frontend</td><td>Next.js</td></tr>
+    <tr><td>Data stores</td><td>PostgreSQL with TimescaleDB (time series) and pgvector (embeddings); MinIO for attachments</td></tr>
+    <tr><td>Real-time transport</td><td>WebSockets</td></tr>
+    <tr><td>Authentication</td><td>Local accounts, JWT, role-based access control</td></tr>
+    <tr><td>Deployment</td><td>Docker Compose first; cloud deployment later</td></tr>
+    <tr><td>Telemetry source</td><td>Own collector agent plus a demo application with fault injection</td></tr>
+    <tr><td>Signals</td><td>Infrastructure metrics, application metrics, logs, change events</td></tr>
+    <tr><td>Alerting</td><td>Static thresholds, statistical anomaly detection, AI-suggested thresholds (human-approved)</td></tr>
+    <tr><td>Alert to incident</td><td>An alert creates a draft; Production Support reviews and raises it</td></tr>
+    <tr><td>Status lifecycle</td><td>Seven states: Raised, Acknowledged, Investigating, Mitigating, Monitoring, Resolved, Closed</td></tr>
+    <tr><td>Severity</td><td>P1 to P4 with SLA timers</td></tr>
+    <tr><td>Multi-team work</td><td>Parallel team tasks under one incident and one shared status</td></tr>
+    <tr><td>Closure</td><td>Only the caller can close; the caller can reject a resolution and reopen</td></tr>
+    <tr><td>Email</td><td>Mailpit local sink in Compose; group email per team with on-call in CC; sent on raise and major changes</td></tr>
+    <tr><td>On-call</td><td>Rotation set in the app, with automatic escalation of unacknowledged incidents</td></tr>
+    <tr><td>Runbook process</td><td>Resolver writes, a lead reviews and approves, then the caller closes</td></tr>
+    <tr><td>Runbook fields</td><td>Timeline; root cause and category; contributing factors; remediation and prevention; workaround applied; similar incidents</td></tr>
+    <tr><td>Root cause labels</td><td>Controlled category list plus free-text detail</td></tr>
+    <tr><td>AI model access</td><td>Provider-agnostic LLM interface; retrieval via pgvector</td></tr>
+    <tr><td>AI features</td><td>Ranked RCA with evidence; similar incidents; runbook draft; stakeholder comms draft</td></tr>
+    <tr><td>AI data sources</td><td>Synthetic corpus, live fault injection, and an import path for real past incidents</td></tr>
+    <tr><td>AI evaluation</td><td>Shadow mode with accuracy scoreboard; thumbs feedback; offline held-out benchmark; staleness health-check job</td></tr>
+    <tr><td>ServiceNow</td><td>Standalone ticketing with optional Table API synchronisation to a developer instance</td></tr>
+    <tr><td>Dashboards</td><td>Prebuilt dashboards plus a simple panel builder in the MVP; full builder in a later phase</td></tr>
+    <tr><td>Attachments</td><td>Metric snapshots, log excerpts, files and screenshots, links and notes</td></tr>
+    <tr><td>Audit</td><td>Immutable audit log of every change</td></tr>
+    <tr><td>Scale target</td><td>About 5 services and about 20 users; scale-out is documented, not load-tested</td></tr>
+    <tr><td>Quality gates</td><td>Unit, API integration and Playwright end-to-end tests; GitHub Actions CI</td></tr>
+    <tr><td>Timeline</td><td>No fixed deadline; delivered in phases</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="roles">
+<h2>5. Roles and permissions</h2>
+<p>Eight roles are defined. <em>Team lead</em> is an attribute of a team membership rather than a separate role: it grants assignment rights within that team and runbook approval rights for incidents resolved by that team. The matrix below is a proposal derived from the agreed workflow and is subject to confirmation (see section 11).</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Capability</th><th class="c">Prod. Support</th><th class="c">Developer</th><th class="c">SRE</th><th class="c">Admin</th><th class="c">Incident Cmdr</th><th class="c">Comms</th><th class="c">Viewer</th><th class="c">Stakeholder</th></tr></thead>
+  <tbody>
+    <tr><td>View dashboards and telemetry</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">—</td></tr>
+    <tr><td>View incident status and impact</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td></tr>
+    <tr><td>View incident detail, logs, attachments</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Review alert drafts and raise incidents</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Change severity</td><td class="c">✓</td><td class="c">—</td><td class="c">✓</td><td class="c">—</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Update status and own team's task</td><td class="c">own incidents</td><td class="c">own team</td><td class="c">own team</td><td class="c">—</td><td class="c">any</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Assign within a team</td><td class="c">lead</td><td class="c">lead</td><td class="c">lead</td><td class="c">—</td><td class="c">any</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Write runbook (as resolver)</td><td class="c">—</td><td class="c">✓</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Approve runbook</td><td class="c">—</td><td class="c">lead</td><td class="c">lead</td><td class="c">—</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Close incident</td><td class="c" colspan="8">Caller only (the user who raised it), after runbook approval, regardless of role</td></tr>
+    <tr><td>Set on-call and manage rotation</td><td class="c">—</td><td class="c">own team</td><td class="c">own team</td><td class="c">all teams</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Draft and send stakeholder comms</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">approve</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Give feedback on AI suggestions</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">—</td><td class="c">✓</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td></tr>
+    <tr><td>Manage users, teams, rules, integrations</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">✓</td><td class="c">—</td><td class="c">—</td><td class="c">—</td><td class="c">—</td></tr>
+  </tbody>
+</table></div>
+<p>All permissions are enforced on the server. The user interface hides controls a role cannot use, but hiding is never the enforcement mechanism.</p>
+</section>
+
+<section id="functional">
+<h2>6. Functional specification</h2>
+
+<h3>6.1 Telemetry collection and storage</h3>
+<ul>
+  <li>A lightweight collector agent runs beside monitored hosts or containers and reports infrastructure metrics (CPU, memory, disk, network) at a configurable interval, with a target visibility delay of 15 seconds.</li>
+  <li>A demo application emits application metrics (latency, error rate, request rate) and structured logs carrying correlation identifiers.</li>
+  <li>Change events (deployments, configuration changes, feature-flag changes) are accepted through an authenticated webhook and are shown as markers on charts.</li>
+  <li>The agent buffers locally and retries so that a restart or short network loss does not cause silent data loss beyond a documented buffer size.</li>
+  <li>Metrics and logs are stored in TimescaleDB hypertables with a default retention of 30 days. Incidents, runbooks and audit records are retained indefinitely.</li>
+  <li>A fault-injection command on the demo application produces realistic incidents (CPU saturation, error bursts, a bad deployment, dependency latency) so the platform can be exercised without a production system.</li>
+</ul>
+
+<h3>6.2 Dashboards</h3>
+<ul>
+  <li>Every registered service has a prebuilt health dashboard (resource usage, request rate, error rate, latency, recent logs, change markers).</li>
+  <li>Users may add, remove and rearrange basic metric panels on a dashboard, and the layout persists per user or per team.</li>
+  <li>The full Grafana-style builder (query editor, variables, many panel types) is explicitly deferred to Phase 3 so that it does not delay the incident and AI loop.</li>
+</ul>
+
+<h3>6.3 Alerting</h3>
+<ul>
+  <li><strong>Static thresholds:</strong> user-defined rules per metric, with a duration condition to suppress transient spikes.</li>
+  <li><strong>Statistical anomaly detection:</strong> baseline-deviation detection requiring no manual threshold.</li>
+  <li><strong>AI-suggested thresholds:</strong> the model proposes thresholds derived from history. A proposal has no effect until a human approves it.</li>
+  <li>A firing alert creates a <em>draft</em> incident pre-filled with the service, metric snapshot and time range. No notification is sent until Production Support reviews and raises the incident.</li>
+  <li>Repeated firings of the same rule for the same service are deduplicated into the existing draft or incident rather than creating new ones.</li>
+</ul>
+
+<h3>6.4 Incident lifecycle</h3>
+<h4>States</h4>
+<p>Raised → Acknowledged → Investigating → Mitigating → Monitoring → Resolved → Closed.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Transition</th><th>Allowed by</th><th>Condition</th></tr></thead>
+  <tbody>
+    <tr><td>Raised → Acknowledged</td><td>Assigned team member, on-call, Incident Commander</td><td>Records acknowledgement time for the SLA</td></tr>
+    <tr><td>Acknowledged → Investigating → Mitigating → Monitoring</td><td>Assigned team members, Incident Commander</td><td>Forward progress; each step records who and when</td></tr>
+    <tr><td>Any active state → an earlier active state</td><td>Assigned team members, Incident Commander</td><td>Permitted when the situation regresses; reason required</td></tr>
+    <tr><td>Monitoring → Resolved</td><td>Assigned team members, Incident Commander</td><td>Opens the runbook requirement</td></tr>
+    <tr><td>Resolved → Investigating (reopen)</td><td>Caller</td><td>Caller rejects the resolution; a reason is required and the link to the earlier resolution is kept</td></tr>
+    <tr><td>Resolved → Closed</td><td>Caller only</td><td>Runbook submitted, complete and approved by a lead</td></tr>
+  </tbody>
+</table></div>
+<p>The API rejects any transition not listed here. Closed is terminal.</p>
+
+<h4>Severity and SLA</h4>
+<div class="table-wrap"><table>
+  <thead><tr><th>Severity</th><th>Acknowledge within</th><th>Resolve within</th><th>Escalate if unacknowledged</th></tr></thead>
+  <tbody>
+    <tr><td>P1</td><td>5 minutes</td><td>4 hours</td><td>10 minutes</td></tr>
+    <tr><td>P2</td><td>15 minutes</td><td>8 hours</td><td>10 minutes</td></tr>
+    <tr><td>P3</td><td>1 hour</td><td>3 days</td><td>Configurable</td></tr>
+    <tr><td>P4</td><td>4 hours</td><td>7 days</td><td>Configurable</td></tr>
+  </tbody>
+</table></div>
+<p>These values are defaults (section 11) and are configurable by an Admin. Timers display remaining time and flag breaches.</p>
+
+<h4>Teams and assignment</h4>
+<ul>
+  <li>An incident can involve several teams at once. Each involved team has its own task with an assignee and a checklist, all under the one shared incident status.</li>
+  <li>A team lead may assign the team's task to any member of that team, and to no one outside it.</li>
+  <li>A team's group email address is configured by an Admin.</li>
+</ul>
+
+<h4>Attachments</h4>
+<ul>
+  <li><strong>Metric snapshots</strong> are frozen at the moment of attachment (chart, exact time range and values) and never change afterwards.</li>
+  <li><strong>Log excerpts</strong> are stored as selected lines with their correlation identifiers.</li>
+  <li><strong>Files and screenshots</strong> are uploaded to MinIO, subject to a size limit and a file-type allowlist enforced on the server.</li>
+  <li><strong>Links and notes</strong> carry external references and free-text context.</li>
+</ul>
+
+<h3>6.5 Notifications and on-call</h3>
+<ul>
+  <li>Raising an incident sends one email to the involved team's group address, with the current on-call engineer in CC, and posts the incident in the app.</li>
+  <li>Emails are sent on raise, severity change, reassignment to a new team, Resolved and Closed. Routine status steps do not send email.</li>
+  <li>Developers and SREs maintain their team's on-call rotation in the app. The CC always follows the rotation in force at the time.</li>
+  <li>If the on-call engineer does not acknowledge within the escalation timer, the incident escalates to the next person in the rotation and the escalation is recorded.</li>
+  <li>If a team has no on-call set, the Admin is alerted and the group email is still sent.</li>
+  <li>In the MVP, email is delivered to Mailpit. The SMTP target is configuration, so a real provider can be used later without code changes.</li>
+</ul>
+
+<h3>6.6 Runbooks</h3>
+<p>The runbook is the gate between Resolved and Closed, and the primary source of training and retrieval data. It is therefore structured.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Field</th><th>Required</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td>Timeline</td><td>Yes</td><td>Detection, acknowledgement, mitigation and resolution times and key events</td></tr>
+    <tr><td>Root cause</td><td>Yes</td><td>Free-text explanation plus a category from the controlled taxonomy</td></tr>
+    <tr><td>Contributing factors</td><td>Yes</td><td>What slowed detection or recovery, or enlarged impact</td></tr>
+    <tr><td>Remediation and prevention</td><td>Yes</td><td>What fixed it, and follow-up actions to prevent recurrence</td></tr>
+    <tr><td>Workaround applied</td><td>Yes</td><td>Any temporary measure and whether it remains in place</td></tr>
+    <tr><td>Similar incidents</td><td>Yes</td><td>Links to related past incidents, or an explicit statement that none were found</td></tr>
+  </tbody>
+</table></div>
+<p><strong>Root cause taxonomy (default list):</strong> Code or deploy; Configuration; Capacity or infrastructure; Dependency or third party; Data; Security; Process or human.</p>
+<p><strong>Process:</strong> the resolver writes the runbook, a lead (or Incident Commander) approves or returns it with comments, and only then does the caller's Close action become available. Approved runbooks are versioned and searchable. Submission with any required field empty is rejected by the server.</p>
+
+<h3>6.7 AI layer</h3>
+<h4>Data used</h4>
+<ul>
+  <li>Metrics, logs and change events around the incident window.</li>
+  <li>The service catalogue and dependency relationships.</li>
+  <li>Historical incidents and approved runbooks (the retrieval corpus).</li>
+  <li>On-call and assignment history.</li>
+  <li><em>Candidates for later phases:</em> distributed traces, cloud-provider and third-party status feeds, incident-channel transcripts, business-impact signals.</li>
+</ul>
+<h4>Design</h4>
+<p>The AI layer has two tiers. <strong>Retrieval:</strong> runbooks and incidents are embedded and stored in pgvector; a new incident retrieves its most similar predecessors. <strong>Reasoning:</strong> a provider-agnostic LLM interface receives the current evidence and the retrieved runbooks and returns a ranked list of probable root causes, each with a confidence value and the specific supporting evidence. The provider can be changed by configuration alone. If the model is unavailable, the incident workflow continues and the interface states that suggestions are unavailable.</p>
+<h4>Features</h4>
+<ul>
+  <li><strong>Similar past incidents</strong> shown when an incident is created, with similarity and links.</li>
+  <li><strong>Ranked root cause analysis</strong> with confidence and cited evidence (metrics, logs, change events, matched runbooks).</li>
+  <li><strong>Runbook draft</strong> pre-filled from the timeline and telemetry for the resolver to edit.</li>
+  <li><strong>Stakeholder comms draft</strong> in plain language for the Comms role.</li>
+  <li><strong>Threshold suggestions</strong> for alert rules (human approval required).</li>
+</ul>
+<div class="callout"><strong>Human in the loop.</strong> Every AI output is labelled as AI-generated, is editable, and is never sent, saved as final, or applied without an explicit human action.</div>
+<h4>Cold start and data supply</h4>
+<p>With no history, the model is supplied by three sources used together: a generated synthetic corpus of incidents and runbooks, real incidents produced by live fault injection on the demo application, and an import command for sanitised real past incidents in CSV or JSON.</p>
+<h4>Evaluation and keeping the data current</h4>
+<ul>
+  <li><strong>Shadow mode:</strong> predictions are stored silently and compared with the approved runbook's root cause; a scoreboard reports top-k accuracy. User-facing suggestions are enabled only after accuracy meets a target set in advance.</li>
+  <li><strong>Feedback:</strong> thumbs up or down on every suggestion, stored against the prediction.</li>
+  <li><strong>Offline benchmark:</strong> a held-out set of incidents is reserved for repeatable evaluation.</li>
+  <li><strong>Staleness job:</strong> a scheduled check flags services with no recent telemetry, deploy events or runbooks, and notifies the owning team, so that Production Support and SRE keep the data in step with production.</li>
+</ul>
+
+<h3>6.8 ServiceNow synchronisation (optional)</h3>
+<ul>
+  <li>With a ServiceNow developer instance configured, raising an incident creates the corresponding record through the Table API, and status changes synchronise in both directions.</li>
+  <li>Each synchronised operation carries an idempotency key so that a retry never creates a duplicate.</li>
+  <li>If synchronisation is disabled or the instance is unreachable, the application behaves identically, and failed operations are queued and visible to an Admin.</li>
+</ul>
+
+<h3>6.9 Audit</h3>
+<p>Every change to an incident, status, assignment, alert rule, on-call schedule and runbook writes an audit entry recording who, what, when, and the values before and after. The API offers no update or delete path for audit entries, and the database role used by the application has no permission to modify them.</p>
+</section>
+
+<section id="architecture">
+<h2>7. Architecture</h2>
+<figure>
+<svg viewBox="0 0 770 430" role="img" aria-label="System architecture of InfraWatch 2.0">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+  </defs>
+  <text class="head" x="20" y="28">SOURCES</text>
+  <text class="head" x="230" y="22">BACKEND (FastAPI)</text>
+  <text class="head" x="570" y="28">CLIENTS AND SERVICES</text>
+
+  <rect class="node" x="20" y="124" width="150" height="40" rx="6"/><text x="95" y="148" text-anchor="middle">Demo app (fault injection)</text>
+  <rect class="node" x="20" y="198" width="150" height="40" rx="6"/><text x="95" y="222" text-anchor="middle">Collector agent</text>
+  <rect class="node" x="20" y="270" width="150" height="40" rx="6"/><text x="95" y="287" text-anchor="middle">CI/CD and config</text><text x="95" y="301" text-anchor="middle" class="cap">change webhooks</text>
+  <path class="arrow" d="M95,164 V198" marker-end="url(#arr)"/>
+  <path class="arrow" d="M170,218 H205 V239"/>
+  <path class="arrow" d="M170,290 H205"/>
+  <path class="arrow" d="M205,290 V239 H250" marker-end="url(#arr)"/>
+
+  <rect class="container" x="230" y="30" width="250" height="230" rx="8"/>
+  <rect class="accent" x="250" y="46" width="210" height="36" rx="6"/><text x="355" y="68" text-anchor="middle">Incident and workflow API</text>
+  <rect class="node" x="250" y="92" width="210" height="36" rx="6"/><text x="355" y="114" text-anchor="middle">AI service (RCA, drafts)</text>
+  <rect class="node" x="250" y="138" width="210" height="36" rx="6"/><text x="355" y="160" text-anchor="middle">Worker: alerts, SLA, escalation</text>
+  <rect class="node" x="250" y="184" width="210" height="36" rx="6"/><text x="355" y="206" text-anchor="middle">Embeddings and staleness jobs</text>
+  <rect class="node" x="250" y="228" width="210" height="22" rx="6"/><text x="355" y="243" text-anchor="middle" class="cap">Ingest API (metrics, logs, events)</text>
+
+  <rect class="container" x="230" y="296" width="250" height="124" rx="8"/>
+  <text class="head" x="242" y="313">PERSISTENCE</text>
+  <rect class="node" x="250" y="322" width="210" height="40" rx="6"/><text x="355" y="340" text-anchor="middle">PostgreSQL</text><text x="355" y="354" text-anchor="middle" class="cap">TimescaleDB · pgvector</text>
+  <rect class="node" x="250" y="370" width="210" height="36" rx="6"/><text x="355" y="392" text-anchor="middle">MinIO (attachments)</text>
+  <path class="arrow" d="M355,260 V296" marker-start="url(#arr)" marker-end="url(#arr)"/>
+
+  <rect class="accent" x="570" y="46" width="180" height="36" rx="6"/><text x="660" y="68" text-anchor="middle">Next.js UI</text>
+  <rect class="node" x="570" y="92" width="180" height="36" rx="6"/><text x="660" y="114" text-anchor="middle">LLM provider (swappable)</text>
+  <rect class="node" x="570" y="138" width="180" height="36" rx="6"/><text x="660" y="160" text-anchor="middle">Mailpit (SMTP)</text>
+  <rect class="node" x="570" y="184" width="180" height="36" rx="6" style="stroke-dasharray:5 4"/><text x="660" y="206" text-anchor="middle">ServiceNow (optional)</text>
+  <path class="arrow" d="M480,64 H570" marker-start="url(#arr)" marker-end="url(#arr)"/><text class="cap" x="525" y="58" text-anchor="middle">REST/WS</text>
+  <path class="arrow" d="M480,110 H570" marker-end="url(#arr)"/><text class="cap" x="525" y="104" text-anchor="middle">LLM API</text>
+  <path class="arrow" d="M480,156 H570" marker-end="url(#arr)"/><text class="cap" x="525" y="150" text-anchor="middle">SMTP</text>
+  <path class="arrow dashed" d="M480,202 H570" marker-start="url(#arr)" marker-end="url(#arr)"/><text class="cap" x="525" y="196" text-anchor="middle">Table API</text>
+</svg>
+<figcaption>Figure 1. Logical architecture of the Compose deployment. Dashed elements are optional. Ingest accepts data from the collector agent and from change webhooks.</figcaption>
+</figure>
+
+<h3>7.1 Services in the Compose deployment</h3>
+<div class="table-wrap"><table>
+  <thead><tr><th>Service</th><th>Responsibility</th></tr></thead>
+  <tbody>
+    <tr><td><code>web</code></td><td>Next.js application: dashboards, incident views, runbook editor, administration; WebSocket client</td></tr>
+    <tr><td><code>api</code></td><td>FastAPI: authentication and RBAC, ingest endpoints, incident and workflow API, WebSocket gateway, audit writing</td></tr>
+    <tr><td><code>worker</code></td><td>Alert evaluation, anomaly detection, SLA timers, escalation, email dispatch, ServiceNow sync, embeddings, staleness job</td></tr>
+    <tr><td><code>db</code></td><td>PostgreSQL with TimescaleDB and pgvector</td></tr>
+    <tr><td><code>minio</code></td><td>S3-compatible object storage for attachments</td></tr>
+    <tr><td><code>mailpit</code></td><td>Local SMTP sink with a web inbox for demonstration</td></tr>
+    <tr><td><code>agent</code></td><td>Collector agent (deployed beside monitored targets)</td></tr>
+    <tr><td><code>demo-app</code></td><td>Sample application with the fault-injection command</td></tr>
+  </tbody>
+</table></div>
+
+<h3>7.2 Principal data entities</h3>
+<ul>
+  <li><strong>Identity:</strong> User, Team, Membership (with team-lead flag), Role assignment, On-call shift.</li>
+  <li><strong>Telemetry:</strong> Service, Metric sample, Log entry, Change event.</li>
+  <li><strong>Alerting:</strong> Alert rule, Alert, Threshold proposal.</li>
+  <li><strong>Incidents:</strong> Incident, Status event, Team task, Attachment, SLA policy, Notification log, Escalation record.</li>
+  <li><strong>Knowledge:</strong> Runbook, Runbook version, Root cause category, Embedding.</li>
+  <li><strong>AI evaluation:</strong> Prediction, Prediction feedback, Benchmark set.</li>
+  <li><strong>Governance and integration:</strong> Audit entry, ServiceNow sync record.</li>
+</ul>
+
+<h3>7.3 Design principles</h3>
+<ul>
+  <li><strong>Server-side enforcement.</strong> State transitions, permissions, mandatory fields and closure rules are enforced in the API, never only in the interface.</li>
+  <li><strong>Degrade gracefully.</strong> Failure of the LLM, ServiceNow or email provider must not block the core incident workflow.</li>
+  <li><strong>Configuration over code.</strong> LLM provider, SMTP target, SLA values, retention and taxonomy are configuration.</li>
+  <li><strong>Reproducibility.</strong> One command starts the system from a clean clone, and every quoted metric can be regenerated by a script.</li>
+  <li><strong>Documented decisions.</strong> Each significant decision is recorded as an architecture decision record.</li>
+</ul>
+</section>
+
+<section id="nfr">
+<h2>8. Non-functional requirements</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Area</th><th>Requirement</th></tr></thead>
+  <tbody>
+    <tr><td>Scale</td><td>Designed and tested for about 5 services and about 20 users. Scale-out is described in the architecture documentation.</td></tr>
+    <tr><td>Performance</td><td>Prebuilt dashboards load in under 2 seconds with demo data; telemetry visible within 15 seconds of collection.</td></tr>
+    <tr><td>Availability</td><td>Core workflow remains usable when the LLM, ServiceNow or the mail provider is unavailable.</td></tr>
+    <tr><td>Security</td><td>Hashed passwords, expiring JWTs, server-side RBAC, no committed secrets, upload validation, immutable audit log.</td></tr>
+    <tr><td>Privacy</td><td>Business stakeholders and read-only viewers see status and impact only, without logs or attachments.</td></tr>
+    <tr><td>Observability of itself</td><td>Every service exposes a health endpoint; structured logs from the platform's own services.</td></tr>
+    <tr><td>Portability</td><td>Runs from Docker Compose on a clean machine; the object store and SMTP target are swappable by configuration so a cloud move needs no code change.</td></tr>
+    <tr><td>Maintainability</td><td>Linting, type checking, tests and a Docker build enforced in CI; failing checks block merging to the main branch.</td></tr>
+    <tr><td>Retention</td><td>Metrics and logs 30 days by default; incidents, runbooks and audit indefinite.</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="phasing">
+<h2>9. Phasing</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Phase</th><th>Theme</th><th>Delivers</th><th>Gates</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag p1">P1</span></td><td>Incident loop</td><td>Environment, telemetry, prebuilt dashboards and simple panel builder, static and anomaly alerts, draft-to-raise flow, lifecycle, attachments, email, on-call and escalation, runbooks with approval and closure rules, RBAC and audit, tests and CI</td><td>G0 to G5, G8, G9 (P1 items)</td></tr>
+    <tr><td><span class="tag p2">P2</span></td><td>AI layer</td><td>Embeddings and similar incidents, ranked RCA with evidence, AI-suggested thresholds, runbook and comms drafts, shadow mode, feedback, offline benchmark, staleness job, import path</td><td>G6 and the P2 items in G2 and G5</td></tr>
+    <tr><td><span class="tag p3">P3</span></td><td>Hardening and reach</td><td>ServiceNow synchronisation, full dashboard builder, cloud deployment, tracing ingestion (candidate)</td><td>G7 and later items</td></tr>
+  </tbody>
+</table></div>
+<p>The end-to-end demonstration (G10) is the release gate for each phase that changes user-visible behaviour. A thin vertical slice through all four stages is preferred over polishing any single stage in isolation.</p>
+</section>
+
+<section id="checks">
+<h2>10. Acceptance checks</h2>
+<p>Each check is a pass or fail statement. Tick items as they are verified; progress is stored in this browser only. Phase tags show when the check applies: <span class="tag p1">P1</span> incident loop, <span class="tag p2">P2</span> AI layer, <span class="tag p3">P3</span> hardening, <span class="tag rel">REL</span> release and demonstration.</p>
+<div class="progress" aria-live="polite">
+  <span id="prog-text">0 / 0 checks passed</span>
+  <div class="bar"><span id="prog-bar"></span></div>
+  <button type="button" id="prog-reset">Reset</button>
+</div>
+
+<h3 class="gate-title"><span>G0. Environment</span><span class="count" data-gate="G0"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G0.1"><span class="id">G0.1</span><span class="txt"><span class="tag p1">P1</span> <code>docker compose up</code> starts every service from a clean clone, with no manual steps beyond copying a <code>.env.example</code>.</span></label></li>
+  <li><label><input type="checkbox" data-id="G0.2"><span class="id">G0.2</span><span class="txt"><span class="tag p1">P1</span> Every service exposes a health endpoint, and Compose reports all of them healthy within 2 minutes.</span></label></li>
+  <li><label><input type="checkbox" data-id="G0.3"><span class="id">G0.3</span><span class="txt"><span class="tag p1">P1</span> A seed command loads demo users for every role, two teams with group emails, and the demo app's service catalogue.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G1. Telemetry</span><span class="count" data-gate="G1"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G1.1"><span class="id">G1.1</span><span class="txt"><span class="tag p1">P1</span> The agent reports infrastructure metrics (CPU, memory, disk, network) and they appear in the app within 15 seconds.</span></label></li>
+  <li><label><input type="checkbox" data-id="G1.2"><span class="id">G1.2</span><span class="txt"><span class="tag p1">P1</span> The demo app's latency, error rate and request rate are ingested and charted.</span></label></li>
+  <li><label><input type="checkbox" data-id="G1.3"><span class="id">G1.3</span><span class="txt"><span class="tag p1">P1</span> Structured logs with correlation IDs are ingested and searchable by service, level and time range.</span></label></li>
+  <li><label><input type="checkbox" data-id="G1.4"><span class="id">G1.4</span><span class="txt"><span class="tag p1">P1</span> Deploy, config and feature-flag change events are ingested and shown as markers on the charts.</span></label></li>
+  <li><label><input type="checkbox" data-id="G1.5"><span class="id">G1.5</span><span class="txt"><span class="tag p1">P1</span> The collector tolerates a restart or a network drop without losing data beyond a documented buffer.</span></label></li>
+  <li><label><input type="checkbox" data-id="G1.6"><span class="id">G1.6</span><span class="txt"><span class="tag p1">P1</span> A fault-injection command (for example CPU spike, error burst, bad deploy) produces visible telemetry changes within 60 seconds.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G2. Dashboards and alerting</span><span class="count" data-gate="G2"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G2.1"><span class="id">G2.1</span><span class="txt"><span class="tag p1">P1</span> A prebuilt health dashboard exists per service and loads in under 2 seconds with demo data.</span></label></li>
+  <li><label><input type="checkbox" data-id="G2.2"><span class="id">G2.2</span><span class="txt"><span class="tag p1">P1</span> A user can add, remove and rearrange basic metric panels, and the layout persists.</span></label></li>
+  <li><label><input type="checkbox" data-id="G2.3"><span class="id">G2.3</span><span class="txt"><span class="tag p1">P1</span> A static threshold rule fires on injected faults and does not fire on a normal baseline over a 30-minute run.</span></label></li>
+  <li><label><input type="checkbox" data-id="G2.4"><span class="id">G2.4</span><span class="txt"><span class="tag p1">P1</span> Statistical anomaly detection flags an injected anomaly without a manually set threshold.</span></label></li>
+  <li><label><input type="checkbox" data-id="G2.5"><span class="id">G2.5</span><span class="txt"><span class="tag p2">P2</span> AI-suggested thresholds are shown as proposals and take effect only after a human approves them.</span></label></li>
+  <li><label><input type="checkbox" data-id="G2.6"><span class="id">G2.6</span><span class="txt"><span class="tag p1">P1</span> A fired alert creates a draft incident pre-filled with the metric snapshot, time range and service, and does not notify anyone until Production Support raises it.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G3. Incident lifecycle</span><span class="count" data-gate="G3"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G3.1"><span class="id">G3.1</span><span class="txt"><span class="tag p1">P1</span> Production Support can raise an incident, with severity P1 to P4, attachments and notes, from a draft or from scratch.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.2"><span class="id">G3.2</span><span class="txt"><span class="tag p1">P1</span> The status bar enforces the seven states, and invalid transitions are rejected by the API, not only hidden in the UI.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.3"><span class="id">G3.3</span><span class="txt"><span class="tag p1">P1</span> Every involved team can update status, and each update records who made it and when.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.4"><span class="id">G3.4</span><span class="txt"><span class="tag p1">P1</span> A team lead can assign the incident to any member of their own team, and cannot assign to another team's members.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.5"><span class="id">G3.5</span><span class="txt"><span class="tag p1">P1</span> Several teams can work in parallel, each with its own assignee and checklist, under one shared status.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.6"><span class="id">G3.6</span><span class="txt"><span class="tag p1">P1</span> SLA timers start at the right state, display remaining time, and flag a breach.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.7"><span class="id">G3.7</span><span class="txt"><span class="tag p1">P1</span> Only the original caller can move an incident to Closed. Anyone else attempting it gets a 403.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.8"><span class="id">G3.8</span><span class="txt"><span class="tag p1">P1</span> The caller can reject a resolution. The incident returns to Investigating with a recorded reason, linked to the earlier resolution.</span></label></li>
+  <li><label><input type="checkbox" data-id="G3.9"><span class="id">G3.9</span><span class="txt"><span class="tag p1">P1</span> The incident page updates live over WebSocket for all open viewers, and recovers after a dropped connection.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G4. Attachments, notifications and on-call</span><span class="count" data-gate="G4"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G4.1"><span class="id">G4.1</span><span class="txt"><span class="tag p1">P1</span> Metric snapshots are frozen at the moment of attachment and stay unchanged afterwards.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.2"><span class="id">G4.2</span><span class="txt"><span class="tag p1">P1</span> Log excerpts, files and screenshots upload to MinIO, with a size limit and a file-type allowlist enforced server-side.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.3"><span class="id">G4.3</span><span class="txt"><span class="tag p1">P1</span> Raising an incident sends one email to the team's group address, visible in Mailpit, with the on-call engineer in CC.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.4"><span class="id">G4.4</span><span class="txt"><span class="tag p1">P1</span> Emails are sent on raise, severity change, reassignment to a new team, Resolved and Closed, and not on every minor update.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.5"><span class="id">G4.5</span><span class="txt"><span class="tag p1">P1</span> Developers can set and edit an on-call rotation in the app, and the CC follows the current rotation.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.6"><span class="id">G4.6</span><span class="txt"><span class="tag p1">P1</span> If the on-call does not acknowledge within the configured timer, the incident escalates to the next person and the escalation is recorded.</span></label></li>
+  <li><label><input type="checkbox" data-id="G4.7"><span class="id">G4.7</span><span class="txt"><span class="tag p1">P1</span> A team with no on-call set is flagged to the Admin and the incident email still reaches the group address.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G5. Runbooks</span><span class="count" data-gate="G5"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G5.1"><span class="id">G5.1</span><span class="txt"><span class="tag p1">P1</span> The Resolved state exposes a runbook form with all mandatory fields.</span></label></li>
+  <li><label><input type="checkbox" data-id="G5.2"><span class="id">G5.2</span><span class="txt"><span class="tag p1">P1</span> Submission is blocked, server-side, if any mandatory field is empty, including workaround applied and similar incidents.</span></label></li>
+  <li><label><input type="checkbox" data-id="G5.3"><span class="id">G5.3</span><span class="txt"><span class="tag p1">P1</span> Root cause category must come from the controlled taxonomy, with free-text detail alongside.</span></label></li>
+  <li><label><input type="checkbox" data-id="G5.4"><span class="id">G5.4</span><span class="txt"><span class="tag p1">P1</span> A lead must approve the runbook before the caller's Close action is enabled. A rejected runbook returns to the resolver with comments.</span></label></li>
+  <li><label><input type="checkbox" data-id="G5.5"><span class="id">G5.5</span><span class="txt"><span class="tag p1">P1</span> Approved runbooks are versioned and searchable.</span></label></li>
+  <li><label><input type="checkbox" data-id="G5.6"><span class="id">G5.6</span><span class="txt"><span class="tag p2">P2</span> Approving a runbook queues it for embedding, and it becomes retrievable within a documented time.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G6. AI and root cause analysis</span><span class="count" data-gate="G6"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G6.1"><span class="id">G6.1</span><span class="txt"><span class="tag p2">P2</span> At incident creation the app shows the top similar past incidents, each with a similarity score and a link.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.2"><span class="id">G6.2</span><span class="txt"><span class="tag p2">P2</span> The RCA panel shows a ranked list of probable causes, with a confidence value and the supporting evidence for each (metrics, logs, change events, matched runbooks).</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.3"><span class="id">G6.3</span><span class="txt"><span class="tag p2">P2</span> On a held-out set of injected faults, top-3 RCA accuracy meets a target set before the run, and the result is published in the repo.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.4"><span class="id">G6.4</span><span class="txt"><span class="tag p2">P2</span> In shadow mode, predictions are stored and hidden from users, and the scoreboard compares them with the approved runbook's root cause.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.5"><span class="id">G6.5</span><span class="txt"><span class="tag p2">P2</span> Every suggestion has thumbs up/down, and the feedback is stored with the prediction ID.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.6"><span class="id">G6.6</span><span class="txt"><span class="tag p2">P2</span> The runbook draft and the stakeholder comms draft are editable, labelled AI-generated, and never sent or saved as final without human action.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.7"><span class="id">G6.7</span><span class="txt"><span class="tag p2">P2</span> The LLM provider can be swapped through configuration only, and the swap is covered by a test.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.8"><span class="id">G6.8</span><span class="txt"><span class="tag p2">P2</span> If the LLM is unavailable, the incident workflow still works and the UI states that AI suggestions are unavailable.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.9"><span class="id">G6.9</span><span class="txt"><span class="tag p2">P2</span> An import command ingests a sanitised CSV/JSON of past incidents and runbooks and reports rows accepted and rejected.</span></label></li>
+  <li><label><input type="checkbox" data-id="G6.10"><span class="id">G6.10</span><span class="txt"><span class="tag p2">P2</span> The staleness job flags services with no recent telemetry, deploy events or runbooks, and notifies the owning team.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G7. ServiceNow synchronisation</span><span class="count" data-gate="G7"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G7.1"><span class="id">G7.1</span><span class="txt"><span class="tag p3">P3</span> With the developer instance configured, a raised incident creates the matching ServiceNow record through the Table API.</span></label></li>
+  <li><label><input type="checkbox" data-id="G7.2"><span class="id">G7.2</span><span class="txt"><span class="tag p3">P3</span> Status changes sync both ways, with an idempotency key so a retry never creates a duplicate.</span></label></li>
+  <li><label><input type="checkbox" data-id="G7.3"><span class="id">G7.3</span><span class="txt"><span class="tag p3">P3</span> With sync disabled or the instance unreachable, the app works unchanged and failed syncs are queued and visible to an Admin.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G8. Security and audit</span><span class="count" data-gate="G8"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G8.1"><span class="id">G8.1</span><span class="txt"><span class="tag p1">P1</span> Every endpoint enforces RBAC server-side, verified by a permission matrix test covering all eight roles.</span></label></li>
+  <li><label><input type="checkbox" data-id="G8.2"><span class="id">G8.2</span><span class="txt"><span class="tag p1">P1</span> Passwords are hashed, JWTs expire, and no secrets are committed to the repo.</span></label></li>
+  <li><label><input type="checkbox" data-id="G8.3"><span class="id">G8.3</span><span class="txt"><span class="tag p1">P1</span> Every incident, status, assignment, rule, on-call and runbook change writes an audit entry (who, what, when, before and after).</span></label></li>
+  <li><label><input type="checkbox" data-id="G8.4"><span class="id">G8.4</span><span class="txt"><span class="tag p1">P1</span> The audit log has no update or delete path in the API, and the database role used by the app cannot modify it.</span></label></li>
+  <li><label><input type="checkbox" data-id="G8.5"><span class="id">G8.5</span><span class="txt"><span class="tag p1">P1</span> Business stakeholders and read-only viewers see status and impact only, with no logs or attachments.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G9. Quality and CI</span><span class="count" data-gate="G9"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G9.1"><span class="id">G9.1</span><span class="txt"><span class="tag p1">P1</span> Unit tests (pytest, Vitest) pass, with a coverage floor agreed up front for the core logic: state machine, permissions, SLA and escalation.</span></label></li>
+  <li><label><input type="checkbox" data-id="G9.2"><span class="id">G9.2</span><span class="txt"><span class="tag p1">P1</span> API integration tests pass against real Postgres/Timescale and MinIO containers.</span></label></li>
+  <li><label><input type="checkbox" data-id="G9.3"><span class="id">G9.3</span><span class="txt"><span class="tag p1">P1</span> A Playwright E2E test runs the full loop: fault injected, draft created, raised, email sent, teams update, runbook approved, caller closes.</span></label></li>
+  <li><label><input type="checkbox" data-id="G9.4"><span class="id">G9.4</span><span class="txt"><span class="tag p1">P1</span> GitHub Actions runs lint, type-check, tests and Docker build on every push, and a failing check blocks merging to main.</span></label></li>
+</ul>
+
+<h3 class="gate-title"><span>G10. The demonstration</span><span class="count" data-gate="G10"></span></h3>
+<ul class="checks">
+  <li><label><input type="checkbox" data-id="G10.1"><span class="id">G10.1</span><span class="txt"><span class="tag rel">REL</span> From a clean machine, one fault injection takes a viewer through the whole lifecycle in under 10 minutes, with no code edits.</span></label></li>
+  <li><label><input type="checkbox" data-id="G10.2"><span class="id">G10.2</span><span class="txt"><span class="tag rel">REL</span> The repo has an architecture diagram, an ADR for each major decision, and a README that gets a stranger running in under 15 minutes.</span></label></li>
+  <li><label><input type="checkbox" data-id="G10.3"><span class="id">G10.3</span><span class="txt"><span class="tag rel">REL</span> A recorded walkthrough exists, and the metrics quoted on the resume (accuracy, duplicate reduction, MTTA in drills) come from reproducible scripts in the repo.</span></label></li>
+</ul>
+</section>
+
+<section id="defaults">
+<h2>11. Defaults and open items</h2>
+<h3>11.1 Assumed defaults</h3>
+<p>These values were proposed during requirements gathering and have not been objected to. They are adjustable by configuration and remain open to revision.</p>
+<ul>
+  <li><strong>SLA targets:</strong> as in section 6.4.</li>
+  <li><strong>Escalation timer:</strong> 10 minutes for P1 and P2.</li>
+  <li><strong>Root cause taxonomy:</strong> Code or deploy, Configuration, Capacity or infrastructure, Dependency or third party, Data, Security, Process or human.</li>
+  <li><strong>LLM provider:</strong> Claude first, behind the provider interface, with a second provider stubbed to prove swappability.</li>
+  <li><strong>Retention:</strong> 30 days for metrics and logs; indefinite for incidents, runbooks and audit.</li>
+  <li><strong>Permission matrix:</strong> as in section 5.</li>
+</ul>
+<h3>11.2 Open items</h3>
+<ul>
+  <li>Final confirmation of the permission matrix, in particular who may change severity.</li>
+  <li>The numeric accuracy target for check G6.3, to be fixed before the evaluation is run.</li>
+  <li>The coverage floor for check G9.1.</li>
+  <li>ServiceNow field mapping between the application's incident model and the Table API.</li>
+  <li>Names and addresses of the demo teams and their group emails.</li>
+  <li>Buffer size and retry policy for the collector agent.</li>
+  <li>Decision on WebSocket reconnect and back-pressure behaviour for slow clients.</li>
+</ul>
+</section>
+
+<section id="risks">
+<h2>12. Risks</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>Scope is large for one developer</td><td>Unfinished or shallow components</td><td>Phase delivery; thin vertical slice first; the full dashboard builder is deferred; gate G10 protects the demonstration</td></tr>
+    <tr><td>Low-quality runbooks under closure pressure</td><td>Noisy training labels and poor retrieval</td><td>Structured mandatory fields, controlled taxonomy, lead approval, optional AI draft to reduce effort</td></tr>
+    <tr><td>Synthetic data overstates AI accuracy</td><td>Misleading resume or demo claims</td><td>Held-out benchmark, shadow mode, accuracy target fixed in advance, report synthetic and live results separately</td></tr>
+    <tr><td>LLM dependency</td><td>Cost, latency, outages, provider change</td><td>Provider-agnostic interface, graceful degradation, retrieval works without the LLM</td></tr>
+    <tr><td>On-call data not maintained</td><td>Incidents reach no one</td><td>Admin alert for empty rotation, group email always sent, escalation timer</td></tr>
+    <tr><td>Alert fatigue from a naive rule set</td><td>Users ignore the system</td><td>Draft-then-raise gate, duration conditions, deduplication, anomaly detection</td></tr>
+    <tr><td>Time-series growth</td><td>Storage and query cost</td><td>Hypertables, 30-day retention, documented scale-out path</td></tr>
+    <tr><td>WebSocket complexity</td><td>Missed or duplicated updates after disconnects</td><td>Reconnect with resume, idempotent client updates, test in G3.9</td></tr>
+    <tr><td>Sensitive content in incident data</td><td>Leakage through attachments or the LLM</td><td>Role-based visibility, upload validation, sanitised imports, configuration to disable external LLM calls</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="glossary">
+<h2>13. Glossary</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>ADR</td><td>Architecture decision record: a short document capturing one design decision and its rationale.</td></tr>
+    <tr><td>AIOps</td><td>Applying machine learning and automation to IT operations data such as alerts, incidents and telemetry.</td></tr>
+    <tr><td>Caller</td><td>The user who raised an incident; the only user who can close it.</td></tr>
+    <tr><td>Change event</td><td>A recorded modification to a system, such as a deployment, configuration change or feature-flag change.</td></tr>
+    <tr><td>MTTA / MTTR</td><td>Mean time to acknowledge / mean time to resolve.</td></tr>
+    <tr><td>On-call</td><td>The engineer currently responsible for responding to incidents for a team.</td></tr>
+    <tr><td>RCA</td><td>Root cause analysis.</td></tr>
+    <tr><td>Runbook</td><td>In this product, the structured post-incident record that is required before an incident can be closed, and that serves as the knowledge base.</td></tr>
+    <tr><td>Shadow mode</td><td>Running predictions silently and scoring them against outcomes before showing them to users.</td></tr>
+    <tr><td>SLA</td><td>Service level agreement; here, the acknowledge and resolve targets per severity.</td></tr>
+    <tr><td>Top-k accuracy</td><td>The proportion of incidents for which the true root cause appears among the model's k highest-ranked suggestions.</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<footer>InfraWatch 2.0 specification, version 0.1 (draft), 9 November 2026. Requirements only; no implementation exists at this version.</footer>
+</main>
+</div>
+
+<script>
+(function () {
+  var KEY = "infrawatch-spec-checks-v1";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[type="checkbox"][data-id]'));
+  var text = document.getElementById("prog-text");
+  var bar = document.getElementById("prog-bar");
+  var reset = document.getElementById("prog-reset");
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; }
+  }
+  function save(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+  }
+  function render() {
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    text.textContent = done + " / " + boxes.length + " checks passed";
+    bar.style.width = (boxes.length ? (100 * done / boxes.length) : 0) + "%";
+    var gates = {};
+    boxes.forEach(function (b) {
+      var g = b.getAttribute("data-id").split(".")[0];
+      gates[g] = gates[g] || { done: 0, total: 0 };
+      gates[g].total++;
+      if (b.checked) gates[g].done++;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".count[data-gate]"), function (el) {
+      var g = gates[el.getAttribute("data-gate")];
+      el.textContent = g ? g.done + " / " + g.total : "";
+    });
+  }
+  var state = load();
+  boxes.forEach(function (b) {
+    b.checked = !!state[b.getAttribute("data-id")];
+    b.addEventListener("change", function () {
+      state[b.getAttribute("data-id")] = b.checked;
+      save(state);
+      render();
+    });
+  });
+  reset.addEventListener("click", function () {
+    state = {};
+    boxes.forEach(function (b) { b.checked = false; });
+    save(state);
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
