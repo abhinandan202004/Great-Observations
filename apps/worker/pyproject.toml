@@ -1,0 +1,14 @@
+[project]
+name = "infrawatch-worker"
+version = "0.1.0"
+description = "InfraWatch worker: alert evaluation, anomaly detection, SLA timers, escalation, email dispatch and scheduled jobs."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.scripts]
+infrawatch-worker = "infrawatch_worker.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"

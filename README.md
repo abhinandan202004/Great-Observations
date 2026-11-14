@@ -2,7 +2,7 @@
 
 Unified observability, incident management and AI-assisted root cause analysis in a single application.
 
-> **Project status: specification stage.** The system described in this repository has not yet been implemented. This README describes the intended design and the criteria by which it will be accepted. Sections that describe commands, ports or behaviour are marked as planned. The authoritative requirements are in [`InfraWatch-2.0-Specification.html`](./InfraWatch-2.0-Specification.html).
+> **Project status: Phase 1, milestone M0 (repository foundation).** The repository contains the workspace layout, service skeletons, container builds, continuous integration and the architecture decision records. None of the product capabilities described below is implemented yet; sections that describe commands, ports or behaviour are marked as planned. The authoritative requirements are in [`docs/specification.html`](./docs/specification.html), the delivery plan is in [`docs/phase-1-plan.md`](./docs/phase-1-plan.md), and design decisions are recorded in [`docs/adr/`](./docs/adr/).
 
 ---
 
@@ -16,7 +16,7 @@ Unified observability, incident management and AI-assisted root cause analysis i
 6. [Roles](#roles)
 7. [Runbooks and the knowledge base](#runbooks-and-the-knowledge-base)
 8. [AI layer](#ai-layer)
-9. [Planned repository layout](#planned-repository-layout)
+9. [Repository layout](#repository-layout)
 10. [Planned getting-started workflow](#planned-getting-started-workflow)
 11. [Roadmap](#roadmap)
 12. [Acceptance criteria](#acceptance-criteria)
@@ -193,9 +193,9 @@ Principles:
 - **Resilient.** If the model is unavailable, the incident workflow continues and the interface says that suggestions are unavailable.
 - **Cold start.** With no history, data comes from a synthetic corpus, live fault injection on the demo application, and an import command for sanitised past incidents.
 
-## Planned repository layout
+## Repository layout
 
-The layout below is a proposal, not an existing structure.
+The top-level structure below exists as of milestone M0; the applications inside it are skeletons. Directories marked *(planned)* are created when their first content is delivered. The layout is described in [ADR 0002](./docs/adr/0002-repository-layout-and-python-workspace.md).
 
 ```text
 infrawatch/
@@ -205,17 +205,22 @@ infrawatch/
 │   ├── worker/         Alerts, SLA, escalation, email, embeddings, jobs
 │   ├── agent/          Collector agent
 │   └── demo-app/       Sample application with fault injection
-├── deploy/             Compose files and service configuration
+├── packages/
+│   └── core/           Pure domain logic: state machine, permissions, SLA, escalation
+├── deploy/             Container image definitions; Compose files from M1
 ├── docs/
 │   ├── specification.html
-│   ├── architecture/
+│   ├── architecture/   Architecture documentation (planned)
 │   └── adr/            Architecture decision records
-├── scripts/            Seed, fault injection, import, evaluation
+├── scripts/            Seed, fault injection, import, evaluation (planned)
 ├── tests/
-│   └── e2e/            Playwright end-to-end tests
+│   └── e2e/            Playwright end-to-end tests (planned)
 ├── .github/workflows/  CI pipelines
-├── docker-compose.yml
+├── docker-compose.yml  (planned, M1)
+├── pyproject.toml      uv workspace and shared Python tool configuration
+├── uv.lock
 ├── .env.example
+├── CONTRIBUTING.md
 └── README.md
 ```
 
@@ -288,17 +293,13 @@ Representative checks:
 
 ## Open items
 
-- Final confirmation of the permission matrix, in particular who may change severity
-- Numeric accuracy target for the root cause benchmark (check G6.3)
-- Coverage floor for unit tests (check G9.1)
-- ServiceNow field mapping for the Table API
-- Names and group email addresses for the demo teams
-- Buffer size and retry policy for the collector agent
-- WebSocket reconnect and back-pressure behaviour for slow clients
+- ServiceNow field mapping for the Table API (deferred to Phase 3)
+
+The remaining former open items were resolved on 2026-11-09; see the [Phase 1 implementation plan](./docs/phase-1-plan.md). In summary: top-3 root cause accuracy target of at least 70% (G6.3), a 90% line and branch coverage floor on core logic (G9.1), a Python collector agent with a bounded on-disk buffer, and a defined WebSocket replay and back-pressure policy.
 
 ## Contributing
 
-Contribution guidelines will be added when implementation begins. Until then, proposed changes to the requirements should be raised against the specification.
+Development setup, the checks enforced by CI, working practices and the branch protection settings are described in [CONTRIBUTING.md](./CONTRIBUTING.md). Proposed changes to the requirements should be raised against the specification.
 
 ## License
 

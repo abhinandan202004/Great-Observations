@@ -1,0 +1,160 @@
+# Continuous integration for InfraWatch.
+# See docs/adr/0016-continuous-integration-and-container-builds.md.
+#
+# Branch protection on main requires the single "ci-passed" check, which
+# succeeds only when every other job has succeeded.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python lint, type-check and tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.13.7"
+          enable-cache: true
+
+      - name: Install dependencies from the lock file
+        run: uv sync --frozen --all-packages
+
+      - name: Lint (Ruff)
+        run: uv run --frozen ruff check --output-format=github .
+
+      - name: Check formatting (Ruff)
+        run: uv run --frozen ruff format --check .
+
+      - name: Type-check (mypy, strict, per workspace member)
+        run: |
+          for member in packages/core apps/api apps/worker apps/agent apps/demo-app; do
+            echo "::group::mypy ${member}"
+            uv run --frozen mypy "${member}"
+            echo "::endgroup::"
+          done
+
+      - name: Unit tests with coverage (pytest)
+        run: uv run --frozen pytest --cov --cov-report=term --cov-report=xml
+
+  web:
+    name: Web lint, type-check and tests
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22.19.0"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies from the lock file
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Type-check (TypeScript)
+        run: npm run typecheck
+
+      - name: Unit tests (Vitest)
+        run: npm run test:coverage
+
+  docker:
+    name: Build image (${{ matrix.service }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: api
+            file: deploy/docker/python.Dockerfile
+            build-args: |
+              PACKAGE=infrawatch-api
+              MODULE=infrawatch_api
+          - service: worker
+            file: deploy/docker/python.Dockerfile
+            build-args: |
+              PACKAGE=infrawatch-worker
+              MODULE=infrawatch_worker
+          - service: agent
+            file: deploy/docker/python.Dockerfile
+            build-args: |
+              PACKAGE=infrawatch-agent
+              MODULE=infrawatch_agent
+          - service: demo-app
+            file: deploy/docker/python.Dockerfile
+            build-args: |
+              PACKAGE=infrawatch-demo-app
+              MODULE=infrawatch_demo_app
+          - service: web
+            file: apps/web/Dockerfile
+            build-args: ""
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          build-args: ${{ matrix.build-args }}
+          tags: infrawatch-${{ matrix.service }}:ci
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+  ci-passed:
+    name: ci-passed
+    if: always()
+    needs: [python, web, docker, secrets]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every job to have succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: ${RESULTS}"
+          for result in ${RESULTS}; do
+            if [ "${result}" != "success" ]; then
+              echo "::error::At least one required job did not succeed."
+              exit 1
+            fi
+          done

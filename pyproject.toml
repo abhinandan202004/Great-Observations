@@ -1,0 +1,91 @@
+# Workspace root for the InfraWatch Python packages.
+# This file is not a package itself; it defines the uv workspace and the
+# shared tool configuration (Ruff, mypy, pytest, coverage).
+
+[project]
+name = "infrawatch-workspace"
+version = "0.0.0"
+description = "InfraWatch 2.0 Python workspace root (not distributed)."
+requires-python = ">=3.12,<3.13"
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*", "apps/api", "apps/worker", "apps/agent", "apps/demo-app"]
+
+[dependency-groups]
+dev = [
+    "infrawatch-core",
+    "infrawatch-api",
+    "infrawatch-worker",
+    "infrawatch-agent",
+    "infrawatch-demo-app",
+    "httpx2>=2.16",
+    "mypy>=1.18",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+    "ruff>=0.14",
+]
+
+[tool.uv.sources]
+infrawatch-core = { workspace = true }
+infrawatch-api = { workspace = true }
+infrawatch-worker = { workspace = true }
+infrawatch-agent = { workspace = true }
+infrawatch-demo-app = { workspace = true }
+
+# ---------------------------------------------------------------- Ruff
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["packages/*/src", "apps/*/src"]
+extend-exclude = ["apps/web"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # flake8-bugbear
+    "UP",       # pyupgrade
+    "SIM",      # flake8-simplify
+    "N",        # pep8-naming
+    "S",        # flake8-bandit (security)
+    "RUF",      # Ruff-specific rules
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101"]  # assert is the idiomatic pytest assertion
+
+# ---------------------------------------------------------------- mypy
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+pretty = true
+
+# ---------------------------------------------------------------- pytest
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib", "--strict-markers", "-ra"]
+testpaths = ["packages", "apps/api", "apps/worker", "apps/agent", "apps/demo-app"]
+
+# ---------------------------------------------------------------- coverage
+
+[tool.coverage.run]
+branch = true
+source_pkgs = [
+    "infrawatch_core",
+    "infrawatch_api",
+    "infrawatch_worker",
+    "infrawatch_agent",
+    "infrawatch_demo_app",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
