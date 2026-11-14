@@ -1,0 +1,14 @@
+[project]
+name = "infrawatch-demo-app"
+version = "0.1.0"
+description = "Demonstration application emitting metrics and structured logs, with a fault-injection interface."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.scripts]
+infrawatch-demo-app = "infrawatch_demo_app.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
