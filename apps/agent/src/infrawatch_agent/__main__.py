@@ -5,6 +5,8 @@ Until the collection loop lands, the process only serves its health endpoint.
 
 import json
 import os
+import signal
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from infrawatch_agent import __version__
@@ -27,6 +29,8 @@ class HealthHandler(BaseHTTPRequestHandler):
 def main() -> None:
     port = int(os.environ.get("HEALTH_PORT", "8000"))
     server = ThreadingHTTPServer(("0.0.0.0", port), HealthHandler)  # noqa: S104  # container listens on all interfaces
+    # PID 1 in a container gets no default SIGTERM handling; exit cleanly so cleanup code runs.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     server.serve_forever()
 
 
