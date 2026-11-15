@@ -9,9 +9,9 @@ The platform uses its own collector agent rather than an existing one. The agent
 
 ## Decision
 
-- The agent is written in **Python** using `psutil` for host metrics and `httpx` for delivery, as the `infrawatch-agent` workspace package.
+- The agent is written in **Python** using `psutil` for host metrics and `httpx2` for delivery, as the `infrawatch-agent` workspace package.
 - It reports every **5 seconds** by default (configurable).
-- Unsent samples are held in an **on-disk SQLite queue** of at most **10,000 samples** (approximately 15 minutes at the default interval and metric set), so they survive an agent restart.
+- Unsent samples are held in an **on-disk SQLite queue** of at most **10,000 samples** (about 2 hours 20 minutes at the default 5 s interval, which records 6 metrics per reading), so they survive an agent restart.
 - When the buffer is full, the **oldest samples are dropped**, and the number of dropped samples is reported as a metric so that loss is visible rather than silent.
 - Delivery retries use **exponential backoff from 1 second to 60 seconds with jitter**.
 - The agent authenticates with a per-agent API key ([ADR 0011](0011-authentication-and-tokens.md)).

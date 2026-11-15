@@ -38,7 +38,9 @@ FROM ${PYTHON_IMAGE} AS runtime
 ARG MODULE
 RUN test -n "${MODULE}" || (echo "MODULE build argument is required" >&2 && exit 1)
 
-RUN groupadd --system app && useradd --system --gid app --no-create-home app
+# /var/lib/infrawatch holds service state; a new named volume mounted there inherits its owner.
+RUN groupadd --system app && useradd --system --gid app --no-create-home app \
+    && install -d -o app -g app /var/lib/infrawatch
 
 COPY --from=build /opt/venv /opt/venv
 

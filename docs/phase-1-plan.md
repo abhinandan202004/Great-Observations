@@ -17,8 +17,21 @@ The milestones follow the agreed principle of a thin vertical slice first. Miles
 | 3 | G9.1 coverage floor | **90% line and branch coverage** on the core modules (state machine, permissions, SLA, escalation), enforced in CI. Other code reports coverage without a blocking floor. |
 | 4 | ServiceNow field mapping | Deferred to Phase 3; not required by Phase 1. |
 | 5 | Demo teams | *Payments Platform* (`payments-team@infrawatch.local`) and *Core Infrastructure* (`infra-team@infrawatch.local`). |
-| 6 | Collector agent | **Python** (psutil, httpx). Reporting interval 5 s. On-disk SQLite buffer holding at most 10,000 samples (approximately 15 minutes); on overflow the oldest samples are dropped and the drop count is itself reported as a metric. Retry with exponential backoff from 1 s to 60 s with jitter. |
+| 6 | Collector agent | **Python** (psutil, httpx2). Reporting interval 5 s. On-disk SQLite buffer holding at most 10,000 samples (about 2 hours 20 minutes at the default 5 s interval, which records 6 metrics per reading); on overflow the oldest samples are dropped and the drop count is itself reported as a metric. Retry with exponential backoff from 1 s to 60 s with jitter. |
 | 7 | WebSocket behaviour | Every incident event carries a monotonically increasing sequence number. On reconnect (exponential backoff) the client sends its last sequence number and the server replays the missed events from the event log; if the gap exceeds the replay window the server instructs the client to refetch the full incident. Each connection has a bounded send queue of 100 messages; a client that overflows it is disconnected with a "resync required" close code. Heartbeat every 20 s. |
+
+### Decisions for M2 (confirmed on 2026-11-16)
+
+| Item | Decision |
+|---|---|
+| Ingest authentication | Bearer API keys from `.env` (`AGENT_INGEST_KEY`, later one per sender), compared in constant time by the API. Any valid key may write for any service until M3 adds key management and binds keys to services. Change events are signed with HMAC-SHA256 (M2 PR 2). |
+| Demo-app telemetry | The demo app posts its own request metrics and logs to the ingest API; the agent reports host metrics only. |
+| Chart freshness | The chart polls every 5 s; the WebSocket gateway arrives in M8. |
+| Delivery | Three pull requests: (1) metric ingest, hypertable and agent (G1.1, G1.5); (2) demo-app telemetry, logs, change events and fault injection (G1.2, G1.4, G1.6); (3) chart with change markers and log search (G1.3 and the display side). |
+| Fault injection | `python -m infrawatch_demo_app.fault <fault> [--minutes N]` calls an internal demo-app endpoint; faults stop after 5 minutes by default or on `fault stop`; one fault at a time. |
+| Demo traffic | A background loop inside the demo app calls its checkout endpoint about 5 times a second. |
+| Read access | Telemetry read endpoints and pages are unauthenticated until M3 puts them behind login. |
+| G1.5 verification | Unit tests for the buffer and backoff, plus `scripts/check-telemetry.sh` in CI: the API is stopped for 30 s with an agent restart in the middle, and the stored samples must show no gap longer than 12 s. |
 
 ## 3. Proposed technical foundations
 
@@ -178,4 +191,5 @@ All 44 P1 checks are assigned exactly once.
 |---|---|---|
 | M0 | Implemented | G9.4 is verified once the CI workflow has run on GitHub and the branch ruleset described in `CONTRIBUTING.md` is active. |
 | M1 | Implemented | G0.1 to G0.3 are verified by the `compose-smoke` CI job: clean `.env.example` start, every health check green within 120 s, seed run twice with row counts checked. |
-| M2 to M10 | Not started | |
+| M2 | In progress | PR 1 (metric ingest, hypertable, agent) verifies G1.1 and G1.5 in the `compose-smoke` job through `scripts/check-telemetry.sh`. |
+| M3 to M10 | Not started | |
