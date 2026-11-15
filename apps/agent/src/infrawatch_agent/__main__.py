@@ -63,30 +63,40 @@ def flush(buffer: Buffer, post: Callable[[list[Sample]], None]) -> None:
         buffer.remove_through(last_id)
 
 
-def run(
-    collector: Collector, buffer: Buffer, post: Callable[[list[Sample]], None], interval: float
-) -> None:
-    next_collect = next_send = time.monotonic()
-    failures = dropped = 0
+def collect_forever(collect: Callable[[], list[Sample]], buffer: Buffer, interval: float) -> None:
+    dropped = 0
+    next_at = time.monotonic()
     while True:
-        now = time.monotonic()
-        if now >= next_collect:
-            samples = collector.collect()
-            samples.append(Sample(samples[0].time, "agent_samples_dropped", float(dropped)))
-            dropped = buffer.add(samples)
-            if dropped:
-                log.warning("Buffer full: dropped the %d oldest samples", dropped)
-            next_collect = now + interval
-        if now >= next_send:
-            try:
-                flush(buffer, post)
-                failures = 0
-                next_send = next_collect
-            except httpx2.HTTPError as error:
-                failures += 1
-                next_send = now + backoff_delay(failures)
-                log.warning("Delivery failed (%s); %d samples buffered", error, len(buffer))
-        time.sleep(max(0.0, min(next_collect, next_send) - time.monotonic()))
+        samples = collect()
+        samples.append(Sample(samples[0].time, "agent_samples_dropped", float(dropped)))
+        dropped = buffer.add(samples)
+        if dropped:
+            log.warning("Buffer full: dropped the %d oldest samples", dropped)
+        next_at = max(next_at + interval, time.monotonic())
+        time.sleep(next_at - time.monotonic())
+
+
+def deliver_forever(
+    buffer_path: Path, post: Callable[[list[Sample]], None], interval: float
+) -> None:
+    """Runs in its own thread so a slow or unreachable API never delays a reading."""
+    buffer = Buffer(buffer_path)  # opened here: an sqlite3 connection only works in its own thread
+    failures = 0
+    while True:
+        try:
+            flush(buffer, post)
+            failures, delay = 0, interval
+        except httpx2.HTTPError as error:
+            failures += 1
+            delay = backoff_delay(failures)
+            log.warning("Delivery failed (%s); %d samples buffered", error, len(buffer))
+        time.sleep(delay)
+
+
+def stop_process(args: threading.ExceptHookArgs) -> None:
+    """A crashed thread must stop the container, not leave it half-working but healthy."""
+    threading.__excepthook__(args)
+    os._exit(1)
 
 
 def main() -> None:
@@ -103,15 +113,19 @@ def main() -> None:
         body = {"service": service, "samples": [s._asdict() for s in samples]}
         httpx2.post(url, json=body, headers=headers, timeout=10).raise_for_status()
 
+    interval = float(os.environ.get("AGENT_INTERVAL_SECONDS", "5"))
     port = int(os.environ.get("HEALTH_PORT", "8000"))
     server = ThreadingHTTPServer(("0.0.0.0", port), HealthHandler)  # noqa: S104  # container listens on all interfaces
+
+    threading.excepthook = stop_process
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    threading.Thread(
+        target=deliver_forever, args=(buffer_path, post, interval), daemon=True
+    ).start()
 
     # PID 1 in a container gets no default SIGTERM handling; exit cleanly so cleanup code runs.
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
-    run(
-        Collector(), Buffer(buffer_path), post, float(os.environ.get("AGENT_INTERVAL_SECONDS", "5"))
-    )
+    collect_forever(Collector().collect, Buffer(buffer_path), interval)
 
 
 if __name__ == "__main__":

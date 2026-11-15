@@ -1,9 +1,16 @@
+import threading
+import time
 from pathlib import Path
 
 import httpx2
 import pytest
 
-from infrawatch_agent.__main__ import backoff_delay, flush
+from infrawatch_agent.__main__ import (
+    backoff_delay,
+    collect_forever,
+    deliver_forever,
+    flush,
+)
 from infrawatch_agent.buffer import Buffer, Sample
 from infrawatch_agent.collector import Collector
 
@@ -86,3 +93,41 @@ def test_collector_reports_cpu_memory_disk_and_network() -> None:
         "net_sent_bytes_per_s",
         "net_recv_bytes_per_s",
     }
+
+
+class StopReadingsError(Exception):
+    pass
+
+
+class CountingCollector:
+    def __init__(self, readings: int) -> None:
+        self.left = readings
+
+    def collect(self) -> list[Sample]:
+        if self.left == 0:
+            raise StopReadingsError
+        self.left -= 1
+        return [Sample("t", "cpu_percent", 1.0)]
+
+
+def test_readings_continue_while_delivery_is_stuck(tmp_path: Path) -> None:
+    path = tmp_path / "b.sqlite3"
+    stuck = threading.Event()
+    release = threading.Event()
+
+    def hanging_post(batch: list[Sample]) -> None:
+        stuck.set()
+        release.wait(timeout=10)
+        raise status_error(503)
+
+    Buffer(path).add(samples(1))
+    threading.Thread(target=deliver_forever, args=(path, hanging_post, 60.0), daemon=True).start()
+    assert stuck.wait(timeout=5)
+
+    started = time.monotonic()
+    with pytest.raises(StopReadingsError):
+        collect_forever(CountingCollector(readings=10).collect, Buffer(path), interval=0.01)
+    release.set()
+
+    assert time.monotonic() - started < 2
+    assert len(Buffer(path)) == 1 + 10 * 2  # each reading adds its sample plus the drop count

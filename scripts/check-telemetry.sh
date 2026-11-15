@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Checks G1.1 and G1.5 against a running, seeded Compose stack:
 #   G1.1  agent metrics are readable through the API, and the newest is at most 15 s old;
+#   resending a batch stores nothing twice (the agent resends after a lost response);
 #   G1.5  stopping the API and restarting the agent leaves no gap in the stored samples.
 set -euo pipefail
 
 sql() { docker compose exec -T db psql -U postgres -d infrawatch -tAc "$1"; }
+utc_now() { sql "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')"; }
 api_points_since() {
   curl -fs "http://localhost:8000/services/demo-host/metrics/cpu_percent?since=$1" | grep -o '"time"' | wc -l
 }
@@ -23,14 +25,22 @@ age=$(sql "SELECT extract(epoch FROM now() - max(time))::int FROM metric_samples
 echo "Newest sample is ${age} s old (limit 15 s)"
 [ "${age}" -le 15 ]
 
+echo "Ingest is idempotent: a batch resent after a lost response is stored once"
+key=$(docker compose exec -T agent printenv INGEST_API_KEY)
+batch="{\"service\":\"demo-host\",\"samples\":[{\"time\":\"$(utc_now)\",\"metric\":\"resend_check\",\"value\":1}]}"
+for _ in 1 2; do
+  curl -fsS -X POST http://localhost:8000/ingest/metrics -H "Authorization: Bearer ${key}"     -H "Content-Type: application/json" -d "${batch}" >/dev/null
+done
+[ "$(sql "SELECT count(*) FROM metric_samples WHERE metric = 'resend_check'")" = 1 ]
+
 echo "G1.5: API down for 30 s, agent restarted in the middle"
-drill_start=$(sql "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')")
+drill_start=$(utc_now)
 docker compose stop api
 sleep 15
 docker compose restart agent
 sleep 15
 docker compose start api
-drill_end=$(sql "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')")
+drill_end=$(utc_now)
 wait_for_points_since "${drill_end}"
 
 gap=$(sql "SELECT coalesce(max(gap), 0)::int FROM (
