@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Demonstration application emitting metrics and structured logs, with a fault-injection interface."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.120",
+    "uvicorn[standard]>=0.38",
+]
 
 [project.scripts]
 infrawatch-demo-app = "infrawatch_demo_app.__main__:main"

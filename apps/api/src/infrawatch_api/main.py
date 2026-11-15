@@ -22,10 +22,7 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["operations"])
     def health() -> HealthResponse:
-        """Report that the process is running.
-
-        Dependency checks (database, object storage) are added in milestone M1.
-        """
+        """Report that the process is running."""
         return HealthResponse(status="ok", service="api", version=__version__)
 
     return app

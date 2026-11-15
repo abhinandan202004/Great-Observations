@@ -20,6 +20,7 @@ This directory holds one record per significant decision, following the format d
 | [0014](0014-defer-full-dashboard-builder.md) | Defer the full dashboard builder to Phase 3 | Accepted |
 | [0015](0015-python-collector-agent.md) | Python collector agent with a bounded on-disk buffer | Accepted |
 | [0016](0016-continuous-integration-and-container-builds.md) | Continuous integration and container builds | Accepted |
+| [0017](0017-object-storage-rustfs.md) | Object storage with RustFS | Accepted |
 
 ## Template
 

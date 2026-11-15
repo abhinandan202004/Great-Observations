@@ -17,7 +17,7 @@ Unified observability, incident management and AI-assisted root cause analysis i
 7. [Runbooks and the knowledge base](#runbooks-and-the-knowledge-base)
 8. [AI layer](#ai-layer)
 9. [Repository layout](#repository-layout)
-10. [Planned getting-started workflow](#planned-getting-started-workflow)
+10. [Getting started](#getting-started)
 11. [Roadmap](#roadmap)
 12. [Acceptance criteria](#acceptance-criteria)
 13. [Testing and continuous integration](#testing-and-continuous-integration)
@@ -92,14 +92,14 @@ flowchart LR
 
     subgraph Persistence
         PG[(PostgreSQL\nTimescaleDB + pgvector)]
-        MINIO[(MinIO\nattachments)]
+        OBJ[(RustFS\nattachments)]
     end
 
     AGENT --> INGEST
     CICD --> INGEST
     INGEST --> PG
     API <--> PG
-    API <--> MINIO
+    API <--> OBJ
     WORKER <--> PG
     AI <--> PG
 
@@ -123,7 +123,7 @@ flowchart LR
 | Backend | Python, FastAPI |
 | Frontend | Next.js |
 | Database | PostgreSQL with TimescaleDB (time series) and pgvector (embeddings) |
-| Object storage | MinIO (S3-compatible) |
+| Object storage | RustFS (S3-compatible; replaces the archived MinIO, see ADR 0017) |
 | Email (development) | Mailpit |
 | Real-time transport | WebSockets |
 | Authentication | Local accounts, JWT, role-based access control |
@@ -224,27 +224,29 @@ infrawatch/
 └── README.md
 ```
 
-## Planned getting-started workflow
+## Getting started
 
-> **Not yet available.** The following describes the intended experience. Commands and ports are illustrative and will be confirmed during implementation.
+> The environment skeleton (milestone M1) runs today: every service starts and reports healthy, and the demo data loads. Product features arrive in later milestones.
 
 ```bash
 git clone <repository-url> infrawatch
 cd infrawatch
 cp .env.example .env
-docker compose up
+docker compose up --build --wait
+docker compose exec api python -m infrawatch_api.seed
 ```
 
-Intended local endpoints:
+Local endpoints:
 
-| Service | Planned address |
+| Service | Address |
 |---|---|
 | Web application | `http://localhost:3000` |
 | API and interactive documentation | `http://localhost:8000/docs` |
+| Demo application | `http://localhost:8080/health` |
 | Mailpit inbox | `http://localhost:8025` |
-| MinIO console | `http://localhost:9001` |
+| RustFS console (object storage) | `http://localhost:9001` |
 
-A seed command will load demo users for every role, two teams with group email addresses and the demo service catalogue. A fault-injection command will then trigger an incident that can be followed through the whole lifecycle.
+The seed command loads demo users for every role, two teams with group email addresses and the demo service catalogue; it is safe to run more than once. A fault-injection command (milestone M2) will then trigger an incident that can be followed through the whole lifecycle.
 
 ## Roadmap
 
@@ -287,7 +289,7 @@ Representative checks:
 ## Testing and continuous integration
 
 - **Unit tests:** pytest (backend) and Vitest (frontend), with an agreed coverage floor on the state machine, permissions, SLA and escalation logic.
-- **API integration tests:** run against real PostgreSQL/TimescaleDB and MinIO containers.
+- **API integration tests:** run against real PostgreSQL/TimescaleDB and RustFS containers.
 - **End-to-end tests:** Playwright runs the full loop from fault injection to caller closure.
 - **Continuous integration:** GitHub Actions runs lint, type checks, tests and a Docker build on every push; a failing check blocks merging to the main branch.
 
