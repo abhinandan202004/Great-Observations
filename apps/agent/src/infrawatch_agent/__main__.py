@@ -73,7 +73,7 @@ def collect_forever(collect: Callable[[], list[Sample]], buffer: Buffer, interva
         if dropped:
             log.warning("Buffer full: dropped the %d oldest samples", dropped)
         next_at = max(next_at + interval, time.monotonic())
-        time.sleep(next_at - time.monotonic())
+        time.sleep(max(0.0, next_at - time.monotonic()))  # the clock moves on after max()
 
 
 def deliver_forever(
