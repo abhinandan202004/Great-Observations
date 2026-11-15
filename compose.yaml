@@ -86,6 +86,7 @@ services:
     image: infrawatch-api:local
     environment:
       DATABASE_URL: postgresql+asyncpg://infrawatch_app:${DB_APP_PASSWORD}@db:5432/infrawatch
+      INGEST_API_KEYS: ${AGENT_INGEST_KEY:?copy .env.example to .env}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -111,6 +112,12 @@ services:
         PACKAGE: infrawatch-agent
         MODULE: infrawatch_agent
     image: infrawatch-agent:local
+    environment:
+      INGEST_URL: http://api:8000
+      INGEST_API_KEY: ${AGENT_INGEST_KEY:?copy .env.example to .env}
+      AGENT_SERVICE: demo-host
+    volumes:
+      - agent-buffer:/var/lib/infrawatch
     healthcheck: *python-health
 
   demo-app:
@@ -141,3 +148,4 @@ services:
 volumes:
   db-data:
   objectstore-data:
+  agent-buffer:

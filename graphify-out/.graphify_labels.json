@@ -1,10 +1,6 @@
 {
-  "0": "Web Build Config",
-  "1": "Phase 1 Delivery",
   "2": "Product Specification Core",
-  "4": "Outbox and Workers",
   "5": "TypeScript Compiler Options",
-  "6": "API Health Endpoint",
   "7": "Docker Build Inputs",
   "10": "CI Docker Matrix",
   "11": "Workflow Permissions",

@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "InfraWatch collector agent: reports host metrics to the ingest API with a bounded on-disk buffer."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    "httpx2>=2.16",
+    "psutil>=7.1",
+]
 
 [project.scripts]
 infrawatch-agent = "infrawatch_agent.__main__:main"
