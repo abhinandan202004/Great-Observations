@@ -29,6 +29,14 @@ next-env.d.ts
 playwright-report/
 test-results/
 
+# Graphify: machine-specific sidecars, build cache, and local backups
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.graphify_version
+graphify-out/cache/
+.claude/settings.json.*-bak
+.claude/skills/*/.graphify_version
+
 # IDE
 .vscode/
 .idea/
