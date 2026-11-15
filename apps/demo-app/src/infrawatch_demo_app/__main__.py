@@ -1,22 +1,16 @@
-"""Entry point: ``python -m infrawatch_demo_app``.
+"""Entry point: ``python -m infrawatch_demo_app``."""
 
-Skeleton only. The long-running process is implemented in a later milestone.
-"""
+import os
 
-import json
-import sys
-
-from infrawatch_demo_app import __version__
+import uvicorn
 
 
 def main() -> None:
-    """Emit a structured start-up record and exit."""
-    record = {
-        "service": "demo-app",
-        "version": __version__,
-        "message": "skeleton build; functionality not yet implemented",
-    }
-    sys.stdout.write(json.dumps(record) + "\n")
+    uvicorn.run(
+        "infrawatch_demo_app.main:app",
+        host=os.environ.get("DEMO_APP_HOST", "0.0.0.0"),  # noqa: S104  # container listens on all interfaces
+        port=int(os.environ.get("DEMO_APP_PORT", "8000")),
+    )
 
 
 if __name__ == "__main__":

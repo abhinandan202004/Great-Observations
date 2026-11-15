@@ -1,0 +1,143 @@
+# Local stack for InfraWatch. Copy .env.example to .env first, then:
+#
+#   docker compose up --build --wait
+#   docker compose exec api python -m infrawatch_api.seed
+#
+# Every long-running service has a health check; --wait returns once all are healthy.
+
+name: infrawatch
+
+x-python-health: &python-health
+  test:
+    - CMD
+    - python
+    - -c
+    - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)
+  interval: 5s
+  timeout: 5s
+  retries: 12
+
+x-api-build: &api-build
+  context: .
+  dockerfile: deploy/docker/python.Dockerfile
+  args:
+    PACKAGE: infrawatch-api
+    MODULE: infrawatch_api
+
+services:
+  db:
+    image: timescale/timescaledb-ha:pg17.11-ts2.32.0
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:?copy .env.example to .env}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?copy .env.example to .env}
+    volumes:
+      - db-data:/home/postgres/pgdata
+      # Mounted as a single file so the image's own init scripts in that directory still run.
+      - ./deploy/db/init-infrawatch.sh:/docker-entrypoint-initdb.d/900-infrawatch.sh:ro
+    healthcheck:
+      # TCP, not the socket: the temporary server used during initialisation listens on the socket only.
+      test: ["CMD", "pg_isready", "--host", "127.0.0.1", "--username", "postgres", "--dbname", "infrawatch"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  objectstore:
+    image: rustfs/rustfs:1.0.4
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?copy .env.example to .env}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?copy .env.example to .env}
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+    ports:
+      - "9001:9001"
+    volumes:
+      - objectstore-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    ports:
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  migrate:
+    build: *api-build
+    image: infrawatch-api:local
+    command: ["python", "-m", "infrawatch_api.migrate"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://infrawatch_owner:${DB_OWNER_PASSWORD}@db:5432/infrawatch
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: *api-build
+    image: infrawatch-api:local
+    environment:
+      DATABASE_URL: postgresql+asyncpg://infrawatch_app:${DB_APP_PASSWORD}@db:5432/infrawatch
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck: *python-health
+
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/python.Dockerfile
+      args:
+        PACKAGE: infrawatch-worker
+        MODULE: infrawatch_worker
+    image: infrawatch-worker:local
+    healthcheck: *python-health
+
+  agent:
+    build:
+      context: .
+      dockerfile: deploy/docker/python.Dockerfile
+      args:
+        PACKAGE: infrawatch-agent
+        MODULE: infrawatch_agent
+    image: infrawatch-agent:local
+    healthcheck: *python-health
+
+  demo-app:
+    build:
+      context: .
+      dockerfile: deploy/docker/python.Dockerfile
+      args:
+        PACKAGE: infrawatch-demo-app
+        MODULE: infrawatch_demo_app
+    image: infrawatch-demo-app:local
+    ports:
+      - "8080:8000"
+    healthcheck: *python-health
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: infrawatch-web:local
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  db-data:
+  objectstore-data:

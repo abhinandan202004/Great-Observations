@@ -1,6 +1,6 @@
 # InfraWatch 2.0: Phase 1 implementation plan
 
-> **Status: approved on 2026-11-09.** Implementation is in progress; milestone M0 is implemented. Technology choices marked *(ADR)* are recorded as architecture decision records in [`docs/adr/`](adr/).
+> **Status: approved on 2026-11-09.** Implementation is in progress; milestones M0 and M1 are implemented. Technology choices marked *(ADR)* are recorded as architecture decision records in [`docs/adr/`](adr/).
 
 ## 1. Scope
 
@@ -52,7 +52,7 @@ Each milestone ends in a demonstrable state and a set of acceptance checks that 
 
 ### M1. Environment skeleton
 
-- Compose file with all eight services (`web`, `api`, `worker`, `db`, `minio`, `mailpit`, `agent`, `demo-app`), each with a health endpoint and a Compose health check.
+- Compose file with all eight services (`web`, `api`, `worker`, `db`, `objectstore`, `mailpit`, `agent`, `demo-app`), each with a health endpoint and a Compose health check. Object storage is RustFS, replacing the archived MinIO ([ADR 0017](adr/0017-object-storage-rustfs.md)); a one-shot `migrate` service applies migrations before the API starts.
 - Initial migration enabling TimescaleDB and pgvector; database roles for migration owner and application.
 - Seed command: one demo user per role, the two demo teams with group emails and leads, the demo service catalogue.
 
@@ -100,7 +100,7 @@ Each milestone ends in a demonstrable state and a set of acceptance checks that 
 
 ### M6. Attachments, notifications and on-call
 
-- Attachment types: metric snapshot (frozen), log excerpt, file or screenshot to MinIO with server-side size limit and type allowlist, link or note.
+- Attachment types: metric snapshot (frozen), log excerpt, file or screenshot to object storage with server-side size limit and type allowlist, link or note.
 - Outbox-driven email through Mailpit on raise, severity change, reassignment to a new team, Resolved and Closed; one email per event to the group address with the on-call in CC. Mail failure never blocks the workflow.
 - On-call rotation editor; CC follows the rotation in force.
 - Escalation job for unacknowledged incidents, with an escalation record; Admin flag when a team has no on-call.
@@ -134,7 +134,7 @@ Each milestone ends in a demonstrable state and a set of acceptance checks that 
 ### M10. Phase 1 hardening and release
 
 - Permission matrix test confirmed to cover every endpoint and all eight roles; audit coverage confirmed for every listed entity.
-- API integration test suite confirmed against real PostgreSQL/TimescaleDB and MinIO containers in CI.
+- API integration test suite confirmed against real PostgreSQL/TimescaleDB and RustFS containers in CI.
 - Clean-machine run-through: one fault injection through the full lifecycle in under 10 minutes; README rewritten from planned to actual behaviour; architecture diagram; ADR set complete.
 - Recorded walkthrough. Any figure quoted (for example MTTA in drills) is produced by a script in `scripts/`.
 
@@ -177,4 +177,5 @@ All 44 P1 checks are assigned exactly once.
 | Milestone | State | Notes |
 |---|---|---|
 | M0 | Implemented | G9.4 is verified once the CI workflow has run on GitHub and the branch ruleset described in `CONTRIBUTING.md` is active. |
-| M1 to M10 | Not started | |
+| M1 | Implemented | G0.1 to G0.3 are verified by the `compose-smoke` CI job: clean `.env.example` start, every health check green within 120 s, seed run twice with row counts checked. |
+| M2 to M10 | Not started | |
