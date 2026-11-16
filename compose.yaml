@@ -16,6 +16,8 @@ x-python-health: &python-health
   interval: 5s
   timeout: 5s
   retries: 12
+  start_period: 30s
+  start_interval: 1s
 
 x-api-build: &api-build
   context: .
@@ -41,6 +43,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+      start_period: 90s
+      start_interval: 1s
 
   objectstore:
     image: rustfs/rustfs:1.0.4
@@ -59,6 +63,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+      start_period: 30s
+      start_interval: 1s
 
   mailpit:
     image: axllent/mailpit:v1.32.0
@@ -69,6 +75,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+      start_period: 30s
+      start_interval: 1s
 
   migrate:
     build: *api-build
@@ -144,6 +152,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+      start_period: 30s
+      start_interval: 1s
 
 volumes:
   db-data:
