@@ -21,6 +21,7 @@ class Buffer:
     def __init__(self, path: Path, max_samples: int = MAX_SAMPLES) -> None:
         self.max_samples = max_samples
         self.db = sqlite3.connect(path, isolation_level=None)
+        self.db.execute("PRAGMA journal_mode=WAL")  # collector writes while delivery reads
         self.db.execute(
             "CREATE TABLE IF NOT EXISTS samples (id INTEGER PRIMARY KEY,"
             " time TEXT NOT NULL, metric TEXT NOT NULL, value REAL NOT NULL)"
