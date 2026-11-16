@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Checks G1.1 and G1.5 against a running, seeded Compose stack:
+# Checks the telemetry acceptance criteria against a running, seeded Compose stack:
 #   G1.1  agent metrics are readable through the API, and the newest is at most 15 s old;
 #   resending a batch stores nothing twice (the agent resends after a lost response);
+#   G1.2  the demo app's request rate, error rate and latency are ingested;
+#   G1.3  (ingest side) logs arrive with correlation ids;
+#   G1.4  signed deploy, config and feature-flag events are stored, a bad signature is refused;
+#   G1.6  each injected fault changes the telemetry within 60 s;
 #   G1.5  stopping the API and restarting the agent leaves no gap in the stored samples.
 set -euo pipefail
 
@@ -10,6 +14,21 @@ utc_now() { sql "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:M
 api_points_since() {
   curl -fs "http://localhost:8000/services/demo-host/metrics/cpu_percent?since=$1" | grep -o '"time"' | wc -l
 }
+wait_until() { # <seconds> <description> <SQL returning true>
+  local deadline=$(( $(date +%s) + $1 ))
+  until [ "$(sql "$3")" = t ]; do
+    if [ "$(date +%s)" -ge "${deadline}" ]; then
+      echo "::error::Timed out after $1 s waiting for: $2"
+      return 1
+    fi
+    sleep 2
+  done
+}
+metric_above() { # <service> <metric> <threshold> <since>: SQL that is true once a sample exceeds it
+  echo "SELECT max(m.value) > $3 FROM metric_samples m JOIN services s ON s.id = m.service_id
+        WHERE s.name = '$1' AND m.metric = '$2' AND m.time > '$4'"
+}
+fault() { docker compose exec -T demo-app python -m infrawatch_demo_app.fault "$@" >/dev/null; }
 wait_for_points_since() {
   for _ in $(seq 1 30); do
     [ "$(api_points_since "$1")" -gt 0 ] && return 0
@@ -27,11 +46,48 @@ echo "Newest sample is ${age} s old (limit 15 s)"
 
 echo "Ingest is idempotent: a batch resent after a lost response is stored once"
 key=$(docker compose exec -T agent printenv INGEST_API_KEY)
-batch="{\"service\":\"demo-host\",\"samples\":[{\"time\":\"$(utc_now)\",\"metric\":\"resend_check\",\"value\":1}]}"
+sent_at=$(utc_now)
+batch="{\"service\":\"demo-host\",\"samples\":[{\"time\":\"${sent_at}\",\"metric\":\"resend_check\",\"value\":1}]}"
 for _ in 1 2; do
-  curl -fsS -X POST http://localhost:8000/ingest/metrics -H "Authorization: Bearer ${key}"     -H "Content-Type: application/json" -d "${batch}" >/dev/null
+  curl -fsS -X POST http://localhost:8000/ingest/metrics -H "Authorization: Bearer ${key}" \
+    -H "Content-Type: application/json" -d "${batch}" >/dev/null
 done
-[ "$(sql "SELECT count(*) FROM metric_samples WHERE metric = 'resend_check'")" = 1 ]
+[ "$(sql "SELECT count(*) FROM metric_samples WHERE metric = 'resend_check' AND time = '${sent_at}'")" = 1 ]
+
+echo "G1.2: demo-app request rate, error rate and latency arrive"
+wait_until 60 "checkout request metrics" "SELECT count(DISTINCT m.metric) = 3
+  FROM metric_samples m JOIN services s ON s.id = m.service_id WHERE s.name = 'checkout'
+  AND m.metric IN ('request_rate_per_s', 'error_rate_percent', 'latency_p95_ms')"
+
+echo "G1.3 (ingest side): logs arrive with correlation ids"
+wait_until 60 "checkout logs" "SELECT count(*) > 0 AND bool_and(correlation_id IS NOT NULL) FROM log_entries"
+
+echo "G1.4: signed change events of every kind are stored; a bad signature is refused"
+secret=$(docker compose exec -T api printenv CHANGE_WEBHOOK_SECRET)
+for kind in deploy config feature_flag; do
+  body="{\"id\":\"$(sql 'SELECT gen_random_uuid()')\",\"time\":\"$(utc_now)\",\"service\":\"checkout\",\"kind\":\"${kind}\",\"summary\":\"telemetry check ${kind}\"}"
+  signature="sha256=$(printf '%s' "${body}" | openssl dgst -sha256 -hmac "${secret}" | sed 's/^.* //')"
+  curl -fsS -X POST http://localhost:8000/ingest/changes -H "X-Signature-256: ${signature}"     -H "Content-Type: application/json" -d "${body}" >/dev/null
+done
+[ "$(sql "SELECT count(DISTINCT kind) FROM change_events WHERE summary LIKE 'telemetry check %'")" = 3 ]
+refused=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/ingest/changes   -H "X-Signature-256: sha256=00" -H "Content-Type: application/json" -d "${body}")
+[ "${refused}" = 401 ]
+
+echo "G1.6: each fault changes the telemetry within 60 s"
+since=$(utc_now); fault error-burst --minutes 2
+wait_until 60 "error-burst to raise the error rate" "$(metric_above checkout error_rate_percent 20 "${since}")"
+fault stop
+since=$(utc_now); fault dependency-latency --minutes 2
+wait_until 60 "dependency-latency to raise p95 latency" "$(metric_above checkout latency_p95_ms 500 "${since}")"
+fault stop
+since=$(utc_now); fault cpu-spike --minutes 2
+wait_until 60 "cpu-spike to raise host CPU" "$(metric_above demo-host cpu_percent 80 "${since}")"
+fault stop
+since=$(utc_now); fault bad-deploy --minutes 2
+wait_until 60 "bad-deploy to emit a deploy event" "SELECT count(*) = 1 FROM change_events
+  WHERE kind = 'deploy' AND summary LIKE '%injected bad deploy%' AND time >= '${since}'"
+wait_until 60 "bad-deploy to raise the error rate" "$(metric_above checkout error_rate_percent 20 "${since}")"
+fault stop
 
 echo "G1.5: API down for 30 s, agent restarted in the middle"
 drill_start=$(utc_now)

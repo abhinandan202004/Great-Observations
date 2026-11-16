@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
     app.state.ingest_keys = tuple(
         key for key in os.environ.get("INGEST_API_KEYS", "").split(",") if key
     )
+    app.state.change_webhook_secret = os.environ.get("CHANGE_WEBHOOK_SECRET", "")
     app.include_router(telemetry.router)
 
     @app.get("/health", tags=["operations"])

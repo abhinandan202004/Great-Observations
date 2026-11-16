@@ -138,6 +138,8 @@ jobs:
         run: |
           docker compose pull --ignore-buildable
           docker compose build
+          # Flush image layers to disk now, so that write-back does not slow the timed start below.
+          sync
 
       - name: Start the stack; every health check must pass within 2 minutes (G0.1, G0.2)
         run: docker compose up --detach --wait --wait-timeout 120
@@ -155,7 +157,7 @@ jobs:
           echo "Seeded: ${counts}"
           test "${counts}" = "2|8|3|2"
 
-      - name: Agent metrics visible within 15 s; no gap across an API outage and agent restart (G1.1, G1.5)
+      - name: Telemetry arrives, faults show within 60 s, nothing lost across an outage (G1.1, G1.2, G1.4 to G1.6)
         run: bash scripts/check-telemetry.sh
 
       - name: Show service state and logs
