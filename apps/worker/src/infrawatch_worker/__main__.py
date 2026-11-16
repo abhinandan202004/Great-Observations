@@ -15,6 +15,9 @@ HEALTH_BODY = json.dumps({"status": "ok", "service": "worker", "version": __vers
 
 
 class HealthHandler(BaseHTTPRequestHandler):
+    def log_request(self, code: int | str = "-", size: int | str = "-") -> None:
+        pass  # suppress healthcheck noise in container logs
+
     def do_GET(self) -> None:
         if self.path != "/health":
             self.send_error(404)

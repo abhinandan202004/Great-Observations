@@ -7,6 +7,9 @@
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
+# Graphify-generated output: treat as generated so GitHub excludes it from language stats.
+graphify-out/** linguist-generated
+
 # Binary assets.
 *.png binary
 *.jpg binary
