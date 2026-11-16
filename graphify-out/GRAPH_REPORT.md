@@ -1,17 +1,17 @@
 # Graph Report - Great-Observations  (2026-11-16)
 
 ## Corpus Check
-- 83 files · ~29,405 words
+- 83 files · ~29,433 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 18 file(s) not represented in the graph (top: (none) 8, .typed 5, .example 1)
 
 ## Summary
-- 620 nodes · 895 edges · 68 communities (42 shown, 26 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.9)
+- 627 nodes · 912 edges · 66 communities (39 shown, 27 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 77 edges (avg confidence: 0.89)
 - Token cost: 222,340 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eea49277`
+- Built from commit: `be69dac7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,16 +24,16 @@
 - TypeScript Compiler Options
 - telemetry.py
 - Docker Build Inputs
+- interval
 - services
-- args
 - CI Docker Matrix
 - Workflow Permissions
 - compose.yaml
 - seed.py
-- ci.yml
+- jobs
 - CI Web Job
 - scripts
-- environment
+- Incident lifecycle states and transitions (section 6.4)
 - test_agent_delivery.py
 - steps
 - Alerting Milestones
@@ -57,14 +57,12 @@
 - Workspace Root
 - init-infrawatch.sh
 - test_ingest_auth.py
-- ADR 0006 PostgreSQL with TimescaleDB and pgvector
+- on
 - Gate G3 Incident lifecycle (9 checks)
 - package.json
 - Phase 1 implementation plan
-- api
-- migrate
+- AI layer design (section 6.7)
 - layout.tsx
-- agent
 - infrawatch_api/__main__.py
 - Architecture decision records index
 - ADR 0008: Job queue and transactional outbox in PostgreSQL
@@ -77,21 +75,22 @@
 - ADR 0016: Continuous integration and container builds
 - ci-passed
 - check-telemetry.sh
-- healthcheck
 
 ## God Nodes (most connected - your core abstractions)
 1. `InfraWatch 2.0 README overview` - 20 edges
 2. `Architecture decision records index` - 20 edges
-3. `Sample` - 19 edges
+3. `Sample` - 18 edges
 4. `Buffer` - 17 edges
 5. `with` - 17 edges
 6. `compilerOptions` - 16 edges
 7. `test_readings_continue_while_delivery_is_stuck()` - 12 edges
 8. `flush()` - 11 edges
-9. `main()` - 11 edges
-10. `Phase 1 implementation plan` - 11 edges
+9. `Phase 1 implementation plan` - 11 edges
+10. `deliver_forever()` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `AI layer two-tier design` --semantically_similar_to--> `AI layer design (section 6.7)`  [INFERRED] [semantically similar]
+  context.md → docs/specification.html
 - `Compose architecture and principal data entities` --semantically_similar_to--> `Compose architecture and principal data entities (section 7)`  [INFERRED] [semantically similar]
   context.md → docs/specification.html
 - `Full agreed decision register` --semantically_similar_to--> `Specification decision register`  [INFERRED] [semantically similar]
@@ -99,8 +98,6 @@
 - `Incident lifecycle and transitions` --semantically_similar_to--> `Incident lifecycle states and transitions (section 6.4)`  [INFERRED] [semantically similar]
   context.md → docs/specification.html
 - `Role/capability permission matrix` --semantically_similar_to--> `Eight roles and permission matrix`  [INFERRED] [semantically similar]
-  context.md → docs/specification.html
-- `Phasing P1/P2/P3 and acceptance checks` --semantically_similar_to--> `Phasing P1/P2/P3 (section 9)`  [INFERRED] [semantically similar]
   context.md → docs/specification.html
 
 ## Import Cycles
@@ -114,27 +111,27 @@
 - **Four-stage flow across all specification documents** — readme_four_stage_flow, context_four_stage_flow, docs_specification_overview [INFERRED 0.85]
 - **Three-phase delivery roadmap P1/P2/P3** — readme_roadmap, context_phasing, docs_specification_phasing, docs_phase_1_plan_scope [INFERRED 0.85]
 
-## Communities (68 total, 26 thin omitted)
+## Communities (66 total, 27 thin omitted)
 
 ### Community 0 - "devDependencies"
 Cohesion: 0.13
 Nodes (15): devDependencies, jsdom@^29.1.1, @testing-library/dom@^10.4.2, @types/node@^22.20.5, @types/react@^19, @types/react-dom@^19, typescript@^5, @vitest/coverage-v8@^5.1.0 (+7 more)
 
 ### Community 1 - "Contributing to InfraWatch"
-Cohesion: 0.33
-Nodes (6): Container image builds for api/worker/agent/demo/web, Contributing to InfraWatch, Development prerequisites (uv, Node 22, Docker 27, Git), Web CI checks (npm lint, typecheck, test), Working practices (branches, commits, server-side enforcement), Gate G10 The demonstration (3 checks)
+Cohesion: 0.25
+Nodes (9): Protect main branch ruleset (ci-passed check), Container image builds for api/worker/agent/demo/web, Contributing to InfraWatch, Development prerequisites (uv, Node 22, Docker 27, Git), Working practices (branches, commits, server-side enforcement), M0 Repository foundation and CI, M10 Phase 1 hardening and release, Gate G10 The demonstration (3 checks) (+1 more)
 
 ### Community 2 - "Product Specification Core"
-Cohesion: 0.06
-Nodes (33): AI layer two-tier design, Compose architecture and principal data entities, Full agreed decision register, Four-stage flow original description, Incident lifecycle and transitions, InfraWatch 2.0 project context, Role/capability permission matrix, Phasing P1/P2/P3 and acceptance checks (+25 more)
+Cohesion: 0.09
+Nodes (23): Compose architecture and principal data entities, Full agreed decision register, Four-stage flow original description, InfraWatch 2.0 project context, Role/capability permission matrix, Phasing P1/P2/P3 and acceptance checks, Compose architecture and principal data entities (section 7), Business case (problem, value, portfolio) (+15 more)
 
 ### Community 3 - "infrawatch_agent/__main__.py"
-Cohesion: 0.08
+Cohesion: 0.07
 Nodes (13): backoff_delay(), HealthHandler, main(), stop_process(), test_backoff_stays_between_one_and_sixty_seconds(), base_url(), test_health_reports_ok(), test_unknown_path_is_not_found() (+5 more)
 
 ### Community 4 - "ADR 0011: Authentication and tokens"
-Cohesion: 0.17
-Nodes (12): Short-lived access JWT (15 min), Argon2id password hashing, ADR 0011: Authentication and tokens, HMAC-SHA256 webhook signatures, Permission policy in infrawatch-core, Rotating revocable refresh token, Delivery retry with exponential backoff (1-60s, jitter), httpx delivery client (+4 more)
+Cohesion: 0.18
+Nodes (12): infrawatch-agent package, Short-lived access JWT (15 min), Argon2id password hashing, ADR 0011: Authentication and tokens, HMAC-SHA256 webhook signatures, Per-agent API key, Rotating revocable refresh token, Delivery retry with exponential backoff (1-60s, jitter) (+4 more)
 
 ### Community 5 - "TypeScript Compiler Options"
 Cohesion: 0.11
@@ -148,33 +145,33 @@ Nodes (16): post(), create_app(), health(), HealthResponse, lifespan(), ingest_m
 Cohesion: 0.14
 Nodes (14): with, build-args, cache, cache-dependency-path, cache-from, cache-to, context, enable-cache (+6 more)
 
-### Community 8 - "services"
-Cohesion: 0.17
-Nodes (22): healthcheck, healthcheck, healthcheck, image, ports, interval, retries, test (+14 more)
+### Community 8 - "interval"
+Cohesion: 0.12
+Nodes (34): healthcheck, healthcheck, environment, healthcheck, image, volumes, healthcheck, DB_APP_PASSWORD (+26 more)
 
-### Community 9 - "args"
-Cohesion: 0.32
-Nodes (12): build, build, MODULE, PACKAGE, args, context, dockerfile, build (+4 more)
+### Community 9 - "services"
+Cohesion: 0.06
+Nodes (45): build, environment, image, volumes, build, depends_on, environment, image (+37 more)
 
 ### Community 10 - "CI Docker Matrix"
 Cohesion: 0.18
 Nodes (11): name, runs-on, steps, strategy, build-args, file, service, docker (+3 more)
 
 ### Community 11 - "Workflow Permissions"
-Cohesion: 0.25
-Nodes (8): GITHUB_TOKEN, GITLEAKS_ENABLE_COMMENTS, RESULTS, secrets, name, runs-on, steps, env
+Cohesion: 0.17
+Nodes (12): GITHUB_TOKEN, GITLEAKS_ENABLE_COMMENTS, RESULTS, secrets, permissions, contents, pull-requests, name (+4 more)
 
 ### Community 12 - "compose.yaml"
-Cohesion: 0.13
-Nodes (14): name, services, volumes, agent-buffer, db-data, objectstore-data, x-api-build, context (+6 more)
+Cohesion: 0.12
+Nodes (15): name, volumes, agent-buffer, db-data, objectstore-data, x-api-build, context, dockerfile (+7 more)
 
 ### Community 13 - "seed.py"
-Cohesion: 0.07
+Cohesion: 0.08
 Nodes (9): main(), run_migrations(), upgrade(), DemoService, DemoUser, main(), seed(), test_every_role_has_exactly_one_demo_user() (+1 more)
 
-### Community 14 - "ci.yml"
-Cohesion: 0.14
-Nodes (13): concurrency, cancel-in-progress, group, name, on, pull_request, push, permissions (+5 more)
+### Community 14 - "jobs"
+Cohesion: 0.22
+Nodes (8): name, runs-on, concurrency, cancel-in-progress, group, jobs, compose-smoke, name
 
 ### Community 15 - "CI Web Job"
 Cohesion: 0.33
@@ -184,9 +181,9 @@ Nodes (6): run, web, working-directory, defaults, name, runs-on
 Cohesion: 0.25
 Nodes (8): scripts, build, dev, lint, start, test, test:coverage, typecheck
 
-### Community 17 - "environment"
-Cohesion: 0.20
-Nodes (10): RUSTFS_ACCESS_KEY, RUSTFS_ADDRESS, RUSTFS_CONSOLE_ADDRESS, RUSTFS_CONSOLE_ENABLE, RUSTFS_SECRET_KEY, environment, image, ports (+2 more)
+### Community 17 - "Incident lifecycle states and transitions (section 6.4)"
+Cohesion: 0.22
+Nodes (8): Incident lifecycle and transitions, Runbook process and controlled taxonomy, Controlled root cause taxonomy (seven categories), Incident lifecycle states and transitions (section 6.4), Runbook form fields and process (section 6.6), Seven-state incident lifecycle, Structured runbook mandatory fields, Severity and SLA defaults (P1-P4)
 
 ### Community 18 - "test_agent_delivery.py"
 Cohesion: 0.09
@@ -204,45 +201,37 @@ Nodes (3): M5 Static alerts and drafts, M9 Anomaly detection and dashboards, Gat
 Cohesion: 0.10
 Nodes (4): client(), test_ingest_rejects_everything_when_no_keys_are_configured(), test_ingest_rejects_missing_or_wrong_key(), test_ingest_rejects_naive_timestamps_and_nan()
 
-### Community 44 - "ADR 0006 PostgreSQL with TimescaleDB and pgvector"
-Cohesion: 0.18
-Nodes (9): Items resolved on 2026-11-09 (G6.3 target, G9.1 coverage, demo teams, agent, WebSocket), 0017. Object storage with RustFS, Consequences, Context, Decision, Python collector agent SQLite buffer and retry policy, Decisions confirmed on 2026-11-09, WebSocket sequence numbers, replay and back-pressure policy (+1 more)
+### Community 44 - "on"
+Cohesion: 0.40
+Nodes (5): on, pull_request, push, branches, branches
 
 ### Community 45 - "Gate G3 Incident lifecycle (9 checks)"
-Cohesion: 0.20
-Nodes (11): Protect main branch ruleset (ci-passed check), M0 Repository foundation and CI, M10 Phase 1 hardening and release, M3 Identity, RBAC and audit foundation, M4 Incident lifecycle core, M6 Attachments, notifications and on-call, M8 Live updates and thin-slice end-to-end test, Gate G3 Incident lifecycle (9 checks) (+3 more)
+Cohesion: 0.17
+Nodes (12): Items resolved on 2026-11-09 (G6.3 target, G9.1 coverage, demo teams, agent, WebSocket), Python collector agent SQLite buffer and retry policy, Decisions confirmed on 2026-11-09, M3 Identity, RBAC and audit foundation, M4 Incident lifecycle core, M6 Attachments, notifications and on-call, M8 Live updates and thin-slice end-to-end test, WebSocket sequence numbers, replay and back-pressure policy (+4 more)
 
 ### Community 46 - "package.json"
 Cohesion: 0.22
 Nodes (10): dependencies, react@19.3.0, react-dom@19.3.0, engines, node, name, private, version (+2 more)
 
 ### Community 47 - "Phase 1 implementation plan"
-Cohesion: 0.32
-Nodes (8): infrawatch-agent package, infrawatch-api FastAPI service, infrawatch-demo-app, WebSocket gateway, Per-agent API key, Shared python.Dockerfile, Phase 1 implementation plan, Phase 1 scope (44 P1 checks plus G10.1/G10.2/walkthrough)
+Cohesion: 0.27
+Nodes (10): infrawatch-api FastAPI service, infrawatch-demo-app, infrawatch-worker package, WebSocket gateway, Permission policy in infrawatch-core, Transactional audit entry (actor, action, before/after), Shared python.Dockerfile, Phase 1 implementation plan (+2 more)
 
-### Community 48 - "api"
-Cohesion: 0.20
-Nodes (10): depends_on, environment, image, ports, migrate, DATABASE_URL, INGEST_API_KEYS, condition (+2 more)
-
-### Community 49 - "migrate"
-Cohesion: 0.29
-Nodes (7): condition, db, command, depends_on, image, restart, migrate
+### Community 48 - "AI layer design (section 6.7)"
+Cohesion: 0.50
+Nodes (3): AI layer two-tier design, AI layer design (section 6.7), AI layer (retrieval + reasoning)
 
 ### Community 50 - "layout.tsx"
 Cohesion: 0.25
 Nodes (4): nextConfig, next@16.4.5, metadata, next
 
-### Community 51 - "agent"
-Cohesion: 0.29
-Nodes (7): environment, image, volumes, AGENT_SERVICE, INGEST_API_KEY, INGEST_URL, agent
-
 ### Community 53 - "Architecture decision records index"
-Cohesion: 0.16
-Nodes (12): Audit immutability and non-functional requirements, Python CI checks (ruff, mypy, pytest), Transactional audit entry (actor, action, before/after), Audit table UPDATE/DELETE-rejecting trigger, ADR 0012: Immutable audit log, Architecture decision records index, ADR template (Context, Decision, Consequences), Proposed technical foundations (toolchain, persistence, queue, auth, audit) (+4 more)
+Cohesion: 0.13
+Nodes (15): Audit immutability and non-functional requirements, Python CI checks (ruff, mypy, pytest), Web CI checks (npm lint, typecheck, test), Audit table UPDATE/DELETE-rejecting trigger, ADR 0012: Immutable audit log, 0017. Object storage with RustFS, Consequences, Context (+7 more)
 
 ### Community 54 - "ADR 0008: Job queue and transactional outbox in PostgreSQL"
-Cohesion: 0.24
-Nodes (9): infrawatch-worker package, Outbox idempotency key, ADR 0008: Job queue and transactional outbox in PostgreSQL, Scheduled periodic tasks, SELECT FOR UPDATE SKIP LOCKED job claim, PostgreSQL LISTEN/NOTIFY channel, InfraWatch incident ticketing as system of record, Optional ServiceNow Table API synchronisation (+1 more)
+Cohesion: 0.28
+Nodes (8): Outbox idempotency key, ADR 0008: Job queue and transactional outbox in PostgreSQL, Scheduled periodic tasks, SELECT FOR UPDATE SKIP LOCKED job claim, PostgreSQL LISTEN/NOTIFY channel, InfraWatch incident ticketing as system of record, Optional ServiceNow Table API synchronisation, ADR 0013: Standalone ticketing with optional ServiceNow sync
 
 ### Community 55 - "ADR 0009: WebSockets for real-time updates"
 Cohesion: 0.40
@@ -273,36 +262,32 @@ Cohesion: 0.50
 Nodes (5): Branch protection on main, ci-passed aggregate status check, ADR 0016: Continuous integration and container builds, GitHub Actions ci.yml workflow, gitleaks secret history scan
 
 ### Community 62 - "ci-passed"
-Cohesion: 0.22
-Nodes (9): if, name, needs, runs-on, name, runs-on, jobs, ci-passed (+1 more)
+Cohesion: 0.40
+Nodes (5): if, name, needs, runs-on, ci-passed
 
 ### Community 63 - "check-telemetry.sh"
 Cohesion: 0.60
 Nodes (4): check-telemetry.sh script, sql(), utc_now(), wait_for_points_since()
 
-### Community 64 - "healthcheck"
-Cohesion: 0.25
-Nodes (8): environment, healthcheck, image, volumes, DB_APP_PASSWORD, DB_OWNER_PASSWORD, POSTGRES_PASSWORD, db
-
 ## Knowledge Gaps
 - **60 isolated node(s):** `infrawatch-api`, `infrawatch-core`, `infrawatch-agent`, `infrawatch-demo-app`, `infrawatch-worker` (+55 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 266 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 271 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Architecture decision records index` connect `Architecture decision records index` to `Contributing to InfraWatch`, `Product Specification Core`, `ADR 0011: Authentication and tokens`, `ADR 0006 PostgreSQL with TimescaleDB and pgvector`, `ADR 0008: Job queue and transactional outbox in PostgreSQL`, `ADR 0009: WebSockets for real-time updates`, `InfraWatch web application (Next.js)`, `ADR 0016: Continuous integration and container builds`?**
+- **Why does `Architecture decision records index` connect `Architecture decision records index` to `Contributing to InfraWatch`, `Product Specification Core`, `ADR 0011: Authentication and tokens`, `ADR 0008: Job queue and transactional outbox in PostgreSQL`, `ADR 0009: WebSockets for real-time updates`, `InfraWatch web application (Next.js)`, `ADR 0016: Continuous integration and container builds`?**
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Are the 10 inferred relationships involving `Sample` (e.g. with `Collector` and `deliver_forever()`) actually correct?**
-  _`Sample` has 10 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 7 inferred relationships involving `Sample` (e.g. with `Collector` and `CountingCollector`) actually correct?**
+  _`Sample` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `infrawatch-api`, `infrawatch-core`, `infrawatch-agent` to the rest of the system?**
   _60 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
-- **Why does `InfraWatch 2.0 README overview` connect `Product Specification Core` to `Contributing to InfraWatch`, `Architecture decision records index`, `Phase 1 implementation plan`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
-- **Are the 8 inferred relationships involving `Buffer` (e.g. with `collect_forever()` and `flush()`) actually correct?**
-  _`Buffer` has 8 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `InfraWatch 2.0 README overview` connect `Product Specification Core` to `Contributing to InfraWatch`, `Phase 1 implementation plan`, `AI layer design (section 6.7)`, `Incident lifecycle states and transitions (section 6.4)`, `Architecture decision records index`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **Are the 6 inferred relationships involving `Buffer` (e.g. with `test_buffer_drops_oldest_when_full_and_reports_count()` and `test_buffer_survives_reopen()`) actually correct?**
+  _`Buffer` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Product Specification Core` be split into smaller, more focused modules?**
-  _Cohesion score 0.06156156156156156 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08923076923076922 - nodes in this community are weakly interconnected._
