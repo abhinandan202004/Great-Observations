@@ -47,7 +47,7 @@
 | Purpose | Resume/portfolio first; product path kept open |
 | Backend | Python + FastAPI |
 | Frontend | Next.js |
-| Data stores | PostgreSQL with **TimescaleDB** (time series) and **pgvector** (embeddings); **MinIO** (S3-compatible) for attachments |
+| Data stores | PostgreSQL with **TimescaleDB** (time series) and **pgvector** (embeddings); **RustFS** (S3-compatible) for attachments |
 | Real-time | **WebSockets** (the assistant had recommended SSE; the user chose WebSockets, so handle reconnect/resume and back-pressure) |
 | Auth | Local accounts, JWT, RBAC |
 | Deployment | **Docker Compose first**, cloud later |
@@ -70,7 +70,7 @@
 | AI evaluation | Shadow mode + accuracy scoreboard; thumbs up/down; offline held-out benchmark; staleness health-check job (all four selected) |
 | ServiceNow | **Standalone ticketing + optional Table API sync** against a developer instance |
 | Dashboards | Prebuilt + simple panel builder in the MVP. The user asked for a full Grafana-style builder; it was agreed to **defer it to Phase 3** because it competes with the incident/AI loop |
-| Attachments | Metric snapshots, log excerpts, files/screenshots, links/notes; **upload ready from the first incident**; stored in MinIO |
+| Attachments | Metric snapshots, log excerpts, files/screenshots, links/notes; **upload ready from the first incident**; stored in RustFS |
 | Audit | Immutable audit log of every change |
 | Scale | Demo scale: about 5 services, about 20 users; scale-out documented, not load-tested |
 | Quality gates | Unit, API integration, Playwright E2E tests; GitHub Actions CI |
@@ -141,7 +141,7 @@ Timers display remaining time and flag breaches.
 - An incident can involve several teams; each has its own task (assignee + checklist) under the one shared status.
 - A team lead can assign the team's task to any member of **that** team and no one outside it.
 - A team's group email address is set by an Admin.
-- **Metric snapshots** are frozen at attachment time (chart + exact time range + values) and never change. **Log excerpts** keep selected lines with correlation IDs. **Files/screenshots** go to MinIO with a server-enforced size limit and file-type allowlist. **Links/notes** carry references and free text.
+- **Metric snapshots** are frozen at attachment time (chart + exact time range + values) and never change. **Log excerpts** keep selected lines with correlation IDs. **Files/screenshots** go to RustFS with a server-enforced size limit and file-type allowlist. **Links/notes** carry references and free text.
 
 ## 6. Notifications and on-call
 
@@ -187,7 +187,7 @@ flowchart LR
 
     subgraph Persistence
         PG[(PostgreSQL\nTimescaleDB + pgvector)]
-        MINIO[(MinIO\nattachments)]
+        MINIO[(RustFS\nattachments)]
     end
 
     AGENT --> INGEST
@@ -212,7 +212,7 @@ flowchart LR
 | `api` | FastAPI: auth and RBAC, ingest endpoints, incident/workflow API, WebSocket gateway, audit writing |
 | `worker` | Alert evaluation, anomaly detection, SLA timers, escalation, email dispatch, ServiceNow sync, embeddings, staleness job |
 | `db` | PostgreSQL with TimescaleDB and pgvector |
-| `minio` | S3-compatible object storage |
+| `objectstore` | RustFS: S3-compatible object storage |
 | `mailpit` | Local SMTP sink with web inbox |
 | `agent` | Collector agent (deployed beside monitored targets) |
 | `demo-app` | Sample application with the fault-injection command |
@@ -343,7 +343,7 @@ Prefer a **thin vertical slice through all four stages** over polishing any sing
 
 **G4. Attachments, notifications and on-call**
 - [ ] G4.1 [P1] Metric snapshots are frozen at the moment of attachment and stay unchanged afterwards.
-- [ ] G4.2 [P1] Log excerpts, files and screenshots upload to MinIO, with a size limit and a file-type allowlist enforced server-side.
+- [ ] G4.2 [P1] Log excerpts, files and screenshots upload to RustFS, with a size limit and a file-type allowlist enforced server-side.
 - [ ] G4.3 [P1] Raising an incident sends one email to the team's group address, visible in Mailpit, with the on-call engineer in CC.
 - [ ] G4.4 [P1] Emails are sent on raise, severity change, reassignment to a new team, Resolved and Closed, and not on every minor update.
 - [ ] G4.5 [P1] Developers can set and edit an on-call rotation in the app, and the CC follows the current rotation.
@@ -384,7 +384,7 @@ Prefer a **thin vertical slice through all four stages** over polishing any sing
 
 **G9. Quality and CI**
 - [ ] G9.1 [P1] Unit tests (pytest, Vitest) pass, with a coverage floor agreed up front for the core logic: state machine, permissions, SLA and escalation.
-- [ ] G9.2 [P1] API integration tests pass against real Postgres/Timescale and MinIO containers.
+- [ ] G9.2 [P1] API integration tests pass against real Postgres/Timescale and RustFS containers.
 - [ ] G9.3 [P1] A Playwright E2E test runs the full loop: fault injected, draft created, raised, email sent, teams update, runbook approved, caller closes.
 - [ ] G9.4 [P1] GitHub Actions runs lint, type-check, tests and Docker build on every push, and a failing check blocks merging to main.
 
@@ -478,7 +478,7 @@ docker compose up
 | Web application | `http://localhost:3000` |
 | API and interactive docs | `http://localhost:8000/docs` |
 | Mailpit inbox | `http://localhost:8025` |
-| MinIO console | `http://localhost:9001` |
+| RustFS console | `http://localhost:9001` |
 
 A seed command loads demo users for every role, two teams with group emails and the demo service catalogue. A fault-injection command then triggers an incident that can be followed through the whole lifecycle.
 

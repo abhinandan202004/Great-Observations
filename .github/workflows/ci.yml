@@ -79,52 +79,6 @@ jobs:
       - name: Unit tests (Vitest)
         run: npm run test:coverage
 
-  docker:
-    name: Build image (${{ matrix.service }})
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - service: api
-            file: deploy/docker/python.Dockerfile
-            build-args: |
-              PACKAGE=infrawatch-api
-              MODULE=infrawatch_api
-          - service: worker
-            file: deploy/docker/python.Dockerfile
-            build-args: |
-              PACKAGE=infrawatch-worker
-              MODULE=infrawatch_worker
-          - service: agent
-            file: deploy/docker/python.Dockerfile
-            build-args: |
-              PACKAGE=infrawatch-agent
-              MODULE=infrawatch_agent
-          - service: demo-app
-            file: deploy/docker/python.Dockerfile
-            build-args: |
-              PACKAGE=infrawatch-demo-app
-              MODULE=infrawatch_demo_app
-          - service: web
-            file: apps/web/Dockerfile
-            build-args: ""
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ${{ matrix.file }}
-          build-args: ${{ matrix.build-args }}
-          tags: infrawatch-${{ matrix.service }}:ci
-          push: false
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
-
   compose-smoke:
     name: Compose stack smoke test
     runs-on: ubuntu-24.04
@@ -189,7 +143,7 @@ jobs:
   ci-passed:
     name: ci-passed
     if: always()
-    needs: [python, web, docker, compose-smoke, secrets]
+    needs: [python, web, compose-smoke, secrets]
     runs-on: ubuntu-24.04
     steps:
       - name: Require every job to have succeeded

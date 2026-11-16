@@ -76,10 +76,16 @@ async def report(app: FastAPI, client: httpx2.AsyncClient) -> None:
             log.exception("Reporting failed; continuing with the next window")
 
 
+class _NoHealthFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/health" not in record.getMessage()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logging.getLogger("httpx2").setLevel(logging.WARNING)  # one INFO line per request otherwise
+    logging.getLogger("uvicorn.access").addFilter(_NoHealthFilter())
     async with httpx2.AsyncClient(
         base_url=os.environ.get("INGEST_URL", "http://api:8000"),
         headers={"Authorization": f"Bearer {os.environ['INGEST_API_KEY']}"},
