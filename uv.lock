@@ -322,12 +322,14 @@ version = "0.1.0"
 source = { editable = "apps/demo-app" }
 dependencies = [
     { name = "fastapi" },
+    { name = "httpx2" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.120" },
+    { name = "httpx2", specifier = ">=2.16" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38" },
 ]
 
