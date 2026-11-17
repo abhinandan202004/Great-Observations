@@ -99,6 +99,8 @@ services:
       DATABASE_URL: postgresql+asyncpg://infrawatch_app:${DB_APP_PASSWORD}@db:5432/infrawatch
       INGEST_API_KEYS: ${AGENT_INGEST_KEY:?copy .env.example to .env},${DEMO_APP_INGEST_KEY:?copy .env.example to .env}
       CHANGE_WEBHOOK_SECRET: ${CHANGE_WEBHOOK_SECRET:?copy .env.example to .env}
+      JWT_SECRET: ${JWT_SECRET:?copy .env.example to .env}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:?copy .env.example to .env}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
