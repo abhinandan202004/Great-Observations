@@ -111,6 +111,9 @@ jobs:
           echo "Seeded: ${counts}"
           test "${counts}" = "2|8|3|2"
 
+      - name: The audit log is insert-only for the app role and the trigger (G8.4, database layer)
+        run: bash scripts/check-audit.sh
+
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
 
