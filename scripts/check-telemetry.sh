@@ -11,10 +11,13 @@
 #   G1.5  stopping the API and restarting the agent leaves no gap in the stored samples.
 set -euo pipefail
 
+password=$(grep '^DEMO_USER_PASSWORD=' .env | cut -d= -f2-)
+token=$(curl -fsS -H 'Content-Type: application/json' -d "{\"email\":\"admin@infrawatch.local\",\"password\":\"${password}\"}" \
+  http://localhost:8000/auth/login | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
 sql() { docker compose exec -T db psql -U postgres -d infrawatch -tAc "$1"; }
 utc_now() { sql "SELECT to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')"; }
 api_points_since() {
-  curl -fs "http://localhost:8000/services/demo-host/metrics/cpu_percent?since=$1" | grep -o '"time"' | wc -l
+  curl -fs -H "Authorization: Bearer ${token}" "http://localhost:8000/services/demo-host/metrics/cpu_percent?since=$1" | grep -o '"time"' | wc -l
 }
 wait_until() { # <seconds> <description> <SQL returning true>
   local deadline=$(( $(date +%s) + $1 ))
@@ -30,7 +33,7 @@ metric_above() { # <service> <metric> <threshold> <since>: SQL that is true once
   echo "SELECT max(m.value) > $3 FROM metric_samples m JOIN services s ON s.id = m.service_id
         WHERE s.name = '$1' AND m.metric = '$2' AND m.time > '$4'"
 }
-api() { curl -fsS "http://localhost:8000$1"; }
+api() { curl -fsS -H "Authorization: Bearer ${token}" "http://localhost:8000$1"; }
 count() { grep -o "$1" | wc -l; } # occurrences on stdin
 fault() { docker compose exec -T demo-app python -m infrawatch_demo_app.fault "$@" >/dev/null; }
 wait_for_points_since() {
@@ -92,11 +95,11 @@ echo "Web: the chart and log pages load, and the browser's API route reaches the
 web="http://$(docker compose port web 3000)"
 curl -fsS -o /dev/null "${web}/telemetry"
 curl -fsS -o /dev/null "${web}/logs"
-services=$(curl -fsS "${web}/api/services")
+services=$(curl -fsS -H "Authorization: Bearer ${token}" "${web}/api/services")
 [ "${services}" = '["checkout","demo-host","payment-gateway"]' ] || { echo "::error::web app served services: ${services}"; exit 1; }
 # Polls: the demo app reports every 5 s, so the metric may not exist yet at the first look.
 for _ in $(seq 1 20); do
-  metrics=$(curl -fsS "${web}/api/services/checkout/metrics?since=${checks_start}" || true)
+  metrics=$(curl -fsS -H "Authorization: Bearer ${token}" "${web}/api/services/checkout/metrics?since=${checks_start}" || true)
   case "${metrics}" in *'"latency_p95_ms"'*) break ;; esac
   sleep 3
 done

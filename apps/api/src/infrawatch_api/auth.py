@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from infrawatch_api.audit import record
+
 router = APIRouter(tags=["auth"])
 
 ACCESS_TTL = timedelta(minutes=15)
@@ -119,6 +121,9 @@ async def login(body: LoginRequest, request: Request, response: Response) -> Tok
         ).first()
         if row is None or not check_password(row.password_hash, body.password):
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Wrong email or password")
+        await record(
+            conn, actor_id=row.id, action="auth.login", target_type="user", target_id=str(row.id)
+        )
         return await _start_session(conn, request, response, row.id, uuid4())
 
 
@@ -142,6 +147,13 @@ async def refresh(request: Request, response: Response) -> TokenResponse:
         if row is None or row.expires_at <= datetime.now(UTC):
             usable = False
         elif row.revoked_at is not None:
+            await record(
+                conn,
+                actor_id=row.user_id,
+                action="auth.refresh_reuse",
+                target_type="login",
+                target_id=str(row.family_id),
+            )
             # A rotated token came back: someone else holds a copy, so the whole login ends.
             await conn.execute(
                 text(
@@ -161,6 +173,13 @@ async def refresh(request: Request, response: Response) -> TokenResponse:
     if not usable:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Sign in again")
     async with engine.begin() as conn:
+        await record(
+            conn,
+            actor_id=row.user_id,
+            action="auth.refresh",
+            target_type="login",
+            target_id=str(row.family_id),
+        )
         return await _start_session(conn, request, response, row.user_id, row.family_id)
 
 
@@ -170,14 +189,27 @@ async def logout(request: Request, response: Response) -> None:
     token = request.cookies.get(REFRESH_COOKIE)
     if token:
         async with request.app.state.engine.begin() as conn:
-            await conn.execute(
-                text(
-                    "UPDATE refresh_tokens SET revoked_at = now() WHERE family_id = ("
-                    "SELECT family_id FROM refresh_tokens WHERE token_hash = :hash) "
-                    "AND revoked_at IS NULL"
-                ),
-                {"hash": _hash_refresh(token)},
-            )
+            owner = (
+                await conn.execute(
+                    text("SELECT user_id, family_id FROM refresh_tokens WHERE token_hash = :hash"),
+                    {"hash": _hash_refresh(token)},
+                )
+            ).first()
+            if owner is not None:
+                await conn.execute(
+                    text(
+                        "UPDATE refresh_tokens SET revoked_at = now() "
+                        "WHERE family_id = :family AND revoked_at IS NULL"
+                    ),
+                    {"family": owner.family_id},
+                )
+                await record(
+                    conn,
+                    actor_id=owner.user_id,
+                    action="auth.logout",
+                    target_type="login",
+                    target_id=str(owner.family_id),
+                )
     response.delete_cookie(REFRESH_COOKIE, path="/", secure=True, httponly=True, samesite="strict")
 
 
