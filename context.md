@@ -310,17 +310,17 @@ Prefer a **thin vertical slice through all four stages** over polishing any sing
 ### 12.1 The 62 acceptance checks (verbatim; each is pass/fail)
 
 **G0. Environment**
-- [ ] G0.1 [P1] `docker compose up` starts every service from a clean clone, with no manual steps beyond copying a `.env.example`.
-- [ ] G0.2 [P1] Every service exposes a health endpoint, and Compose reports all of them healthy within 2 minutes.
-- [ ] G0.3 [P1] A seed command loads demo users for every role, two teams with group emails, and the demo app's service catalogue.
+- [x] G0.1 [P1] `docker compose up` starts every service from a clean clone, with no manual steps beyond copying a `.env.example`.
+- [x] G0.2 [P1] Every service exposes a health endpoint, and Compose reports all of them healthy within 2 minutes.
+- [x] G0.3 [P1] A seed command loads demo users for every role, two teams with group emails, and the demo app's service catalogue.
 
 **G1. Telemetry**
-- [ ] G1.1 [P1] The agent reports infrastructure metrics (CPU, memory, disk, network) and they appear in the app within 15 seconds.
-- [ ] G1.2 [P1] The demo app's latency, error rate and request rate are ingested and charted.
-- [ ] G1.3 [P1] Structured logs with correlation IDs are ingested and searchable by service, level and time range.
-- [ ] G1.4 [P1] Deploy, config and feature-flag change events are ingested and shown as markers on the charts.
-- [ ] G1.5 [P1] The collector tolerates a restart or a network drop without losing data beyond a documented buffer.
-- [ ] G1.6 [P1] A fault-injection command (for example CPU spike, error burst, bad deploy) produces visible telemetry changes within 60 seconds.
+- [x] G1.1 [P1] The agent reports infrastructure metrics (CPU, memory, disk, network) and they appear in the app within 15 seconds.
+- [x] G1.2 [P1] The demo app's latency, error rate and request rate are ingested and charted.
+- [x] G1.3 [P1] Structured logs with correlation IDs are ingested and searchable by service, level and time range.
+- [x] G1.4 [P1] Deploy, config and feature-flag change events are ingested and shown as markers on the charts.
+- [x] G1.5 [P1] The collector tolerates a restart or a network drop without losing data beyond a documented buffer.
+- [x] G1.6 [P1] A fault-injection command (for example CPU spike, error burst, bad deploy) produces visible telemetry changes within 60 seconds.
 
 **G2. Dashboards and alerting**
 - [ ] G2.1 [P1] A prebuilt health dashboard exists per service and loads in under 2 seconds with demo data.

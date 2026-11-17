@@ -1,8 +1,6 @@
 {
   "2": "Product Specification Core",
   "5": "TypeScript Compiler Options",
-  "7": "Docker Build Inputs",
-  "10": "CI Docker Matrix",
   "11": "Workflow Permissions",
   "15": "CI Web Job",
   "20": "Pure Domain Core",

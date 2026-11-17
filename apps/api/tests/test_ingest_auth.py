@@ -108,3 +108,17 @@ def test_change_webhook_validates_a_correctly_signed_body(client: TestClient) ->
 
     response = client.post("/ingest/changes", content=body, headers=signed(body, "webhook-secret"))
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "",  # a time range is required, so a search never scans all 30 days by accident
+        "since=2026-11-16T10:00:00",  # no time zone
+        "since=2026-11-16T10:00:00Z&level=fatal",
+        "since=2026-11-16T10:00:00Z&limit=0",
+        "since=2026-11-16T10:00:00Z&limit=1001",
+    ],
+)
+def test_log_search_rejects_bad_filters(client: TestClient, query: str) -> None:
+    assert client.get(f"/logs?{query}").status_code == 422

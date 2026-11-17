@@ -2,7 +2,16 @@
 
 Next.js (App Router, TypeScript) user interface for InfraWatch: dashboards, incident views, the runbook editor and administration.
 
-> **Status:** application shell only (milestone M0). Feature work begins in later milestones; see [`docs/phase-1-plan.md`](../../docs/phase-1-plan.md).
+> **Status:** telemetry charts and log search (milestone M2). Incident views follow in later milestones; see [`docs/phase-1-plan.md`](../../docs/phase-1-plan.md).
+
+## Pages
+
+| Page | Shows |
+|---|---|
+| `/telemetry` | One chart per metric of the chosen service, refreshed every 5 s, with deploy, config and feature-flag events as vertical markers and in a table |
+| `/logs` | Log search by service, level, time range and text or correlation ID |
+
+The browser calls the API through `/api/*`, which the web server forwards to `API_URL` (default `http://localhost:8000`; the container image is built with `http://api:8000`). `API_URL` is read at build time.
 
 ## Commands
 
