@@ -105,6 +105,7 @@ async def service_id(conn: AsyncConnection, name: str) -> object:
 
 @router.post("/ingest/metrics", dependencies=[Depends(require_ingest_key)])
 async def ingest_metrics(batch: MetricBatch, request: Request) -> IngestResult:
+    # shortcut: ingest routes are not audited (high-volume machine traffic, not human actions)
     engine: AsyncEngine = request.app.state.engine
     async with engine.begin() as conn:
         sid = await service_id(conn, batch.service)

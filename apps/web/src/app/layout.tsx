@@ -16,6 +16,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/">InfraWatch</Link>
           <Link href="/telemetry">Telemetry</Link>
           <Link href="/logs">Logs</Link>
+          <Link href="/login">Sign in</Link>
+          <Link href="/admin/access-requests">Access requests</Link>
         </nav>
         {children}
       </body>

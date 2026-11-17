@@ -18,6 +18,10 @@ GATED = {
     ("GET", "/services/{service}/changes"): Capability.VIEW_TELEMETRY,
     ("GET", "/services/{service}/metrics/{metric}"): Capability.VIEW_TELEMETRY,
     ("GET", "/logs"): Capability.VIEW_INCIDENT_DETAIL,
+    ("GET", "/access-requests"): Capability.MANAGE_USERS_TEAMS_RULES,
+    ("POST", "/access-requests/{request_id}/approve"): Capability.MANAGE_USERS_TEAMS_RULES,
+    ("POST", "/access-requests/{request_id}/reject"): Capability.MANAGE_USERS_TEAMS_RULES,
+    ("POST", "/users"): Capability.MANAGE_USERS_TEAMS_RULES,
 }
 # Routes that check something other than a role: the caller's sign-in, or the ingest key.
 NOT_ROLE_GATED = {
@@ -26,6 +30,7 @@ NOT_ROLE_GATED = {
     ("POST", "/auth/refresh"),
     ("POST", "/auth/logout"),
     ("GET", "/auth/me"),
+    ("POST", "/access-requests"),
     ("POST", "/ingest/metrics"),
     ("POST", "/ingest/logs"),
     ("POST", "/ingest/changes"),
@@ -33,7 +38,11 @@ NOT_ROLE_GATED = {
 
 
 def _path(template: str) -> str:
-    return template.replace("{service}", "checkout").replace("{metric}", "cpu_percent")
+    return (
+        template.replace("{service}", "checkout")
+        .replace("{metric}", "cpu_percent")
+        .replace("{request_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+    )
 
 
 def _url(template: str) -> str:
