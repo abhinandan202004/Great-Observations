@@ -11,6 +11,9 @@ from pydantic import AwareDatetime, BaseModel, Field, ValidationError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
+from infrawatch_api.access import require
+from infrawatch_core.policy import Capability
+
 router = APIRouter(tags=["telemetry"])
 
 MAX_QUERY_POINTS = 2000
@@ -165,14 +168,16 @@ async def ingest_change(request: Request) -> IngestResult:
 
 # The read endpoints below are unauthenticated until M3 puts them behind login
 # (phase-1-plan, M2 decisions).
-@router.get("/services")
+@router.get("/services", dependencies=[Depends(require(Capability.VIEW_TELEMETRY))])
 async def service_names(request: Request) -> list[str]:
     engine: AsyncEngine = request.app.state.engine
     async with engine.connect() as conn:
         return list(await conn.scalars(text("SELECT name FROM services ORDER BY name")))
 
 
-@router.get("/services/{service}/metrics")
+@router.get(
+    "/services/{service}/metrics", dependencies=[Depends(require(Capability.VIEW_TELEMETRY))]
+)
 async def metric_names(service: str, since: AwareDatetime, request: Request) -> list[str]:
     """Names of the metrics the service has reported since ``since``."""
     engine: AsyncEngine = request.app.state.engine
@@ -188,7 +193,9 @@ async def metric_names(service: str, since: AwareDatetime, request: Request) -> 
         return list(names)
 
 
-@router.get("/services/{service}/changes")
+@router.get(
+    "/services/{service}/changes", dependencies=[Depends(require(Capability.VIEW_TELEMETRY))]
+)
 async def change_markers(
     service: str, since: AwareDatetime, request: Request
 ) -> list[ChangeMarker]:
@@ -209,7 +216,7 @@ async def change_markers(
         return [ChangeMarker(time=r.time, kind=r.kind, summary=r.summary) for r in rows]
 
 
-@router.get("/logs")
+@router.get("/logs", dependencies=[Depends(require(Capability.VIEW_INCIDENT_DETAIL))])
 async def search_logs(
     request: Request,
     since: AwareDatetime,
@@ -251,7 +258,10 @@ async def search_logs(
         return [LogLine(**row._mapping) for row in rows]
 
 
-@router.get("/services/{service}/metrics/{metric}")
+@router.get(
+    "/services/{service}/metrics/{metric}",
+    dependencies=[Depends(require(Capability.VIEW_TELEMETRY))],
+)
 async def metric_series(
     service: str, metric: str, since: AwareDatetime, request: Request
 ) -> list[MetricPoint]:

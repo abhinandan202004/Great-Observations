@@ -2,11 +2,16 @@ import hashlib
 import hmac
 import json
 from datetime import UTC, datetime
+from uuid import uuid4
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from infrawatch_api import access
+from infrawatch_api.auth import current_user_id
 from infrawatch_api.main import create_app
+from infrawatch_core.roles import Role
 
 NOW = datetime.now(UTC).isoformat()
 BATCH = {
@@ -16,10 +21,15 @@ BATCH = {
 
 
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
+def app(monkeypatch: pytest.MonkeyPatch) -> FastAPI:
     monkeypatch.setenv("INGEST_API_KEYS", "first-key,second-key")
     monkeypatch.setenv("CHANGE_WEBHOOK_SECRET", "webhook-secret")
-    return TestClient(create_app())
+    return create_app()
+
+
+@pytest.fixture
+def client(app: FastAPI) -> TestClient:
+    return TestClient(app)
 
 
 @pytest.mark.parametrize(
@@ -120,5 +130,13 @@ def test_change_webhook_validates_a_correctly_signed_body(client: TestClient) ->
         "since=2026-11-16T10:00:00Z&limit=1001",
     ],
 )
-def test_log_search_rejects_bad_filters(client: TestClient, query: str) -> None:
+def test_log_search_rejects_bad_filters(
+    app: FastAPI, client: TestClient, query: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Signed in as an admin, so the request gets past the permission check to validation.
+    async def admin_roles(_request: object, _user_id: object) -> frozenset[Role]:
+        return frozenset({Role.ADMIN})
+
+    monkeypatch.setattr(access, "load_roles", admin_roles)
+    app.dependency_overrides[current_user_id] = lambda: uuid4()
     assert client.get(f"/logs?{query}").status_code == 422

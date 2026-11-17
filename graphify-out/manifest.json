@@ -480,21 +480,21 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/telemetry.py": {
-    "mtime": 1794907522.9975502,
-    "seen": 1794908080.4571304,
-    "ast_hash": "636b0262584650e8104a90af548bfbe5",
+    "mtime": 1794911596.999032,
+    "seen": 1794911905.3720584,
+    "ast_hash": "ab95a30de31b9b2218f4c0c4809bbf64",
     "semantic_hash": ""
   },
   "apps/api/tests/test_ingest_auth.py": {
-    "mtime": 1794907523.008063,
-    "seen": 1794908080.4571304,
-    "ast_hash": "c4299bb7ca1194c53bc8e1c8704349ad",
+    "mtime": 1794911703.1971755,
+    "seen": 1794911905.3720584,
+    "ast_hash": "41a20aa1d9cc85e6d84870d49789a50c",
     "semantic_hash": ""
   },
   "scripts/check-telemetry.sh": {
-    "mtime": 1794907523.3681018,
-    "seen": 1794908080.4571304,
-    "ast_hash": "0ef32be5a1e02763dbc4475a39aa74a6",
+    "mtime": 1794911776.075007,
+    "seen": 1794911905.3720584,
+    "ast_hash": "b7279afcbc2b517c70acb61f4830bbb1",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0003_logs_and_change_events.py": {
@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/auth.py": {
-    "mtime": 1794908897.2780242,
-    "seen": 1794909006.9724107,
-    "ast_hash": "d2586f412af77cccaf3d1b8c85978190",
+    "mtime": 1794911610.2545924,
+    "seen": 1794911905.3720584,
+    "ast_hash": "d3ee059e8e980e6e85526822e9c83203",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0005_refresh_tokens.py": {
@@ -594,9 +594,39 @@
     "semantic_hash": ""
   },
   "scripts/check-auth.sh": {
-    "mtime": 1794908876.8556943,
-    "seen": 1794909006.9724107,
-    "ast_hash": "eb3d386c0f4219cc7cef5dfafe18a52a",
+    "mtime": 1794911802.7278666,
+    "seen": 1794911905.3720584,
+    "ast_hash": "23aeaaa46600113f2d050a50c1fe23f9",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/access.py": {
+    "mtime": 1794911610.2545924,
+    "seen": 1794911905.3720584,
+    "ast_hash": "fe87c265a21463a37f232cfb53f64f8d",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/audit.py": {
+    "mtime": 1794911595.6578822,
+    "seen": 1794911905.3720584,
+    "ast_hash": "f542948c149bb5801503a6adcc11157e",
+    "semantic_hash": ""
+  },
+  "apps/api/tests/test_permission_matrix.py": {
+    "mtime": 1794911656.3399708,
+    "seen": 1794911905.3720584,
+    "ast_hash": "1a39d38cca79abdffe0a170bb0d5188e",
+    "semantic_hash": ""
+  },
+  "packages/core/src/infrawatch_core/policy.py": {
+    "mtime": 1794911566.8099618,
+    "seen": 1794911905.3720584,
+    "ast_hash": "7f193656e2c710d91f044d00462572fd",
+    "semantic_hash": ""
+  },
+  "packages/core/tests/test_policy.py": {
+    "mtime": 1794911572.7786686,
+    "seen": 1794911905.3720584,
+    "ast_hash": "03c3f294f41c654088149a15142a50f9",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
