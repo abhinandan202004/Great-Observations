@@ -3,8 +3,10 @@
 #   G1.1  agent metrics are readable through the API, and the newest is at most 15 s old;
 #   resending a batch stores nothing twice (the agent resends after a lost response);
 #   G1.2  the demo app's request rate, error rate and latency are ingested;
-#   G1.3  (ingest side) logs arrive with correlation ids;
-#   G1.4  signed deploy, config and feature-flag events are stored, a bad signature is refused;
+#   G1.3  logs arrive with correlation ids and are searchable by service, level, time and text;
+#   G1.4  signed deploy, config and feature-flag events are stored and served for the chart
+#         markers, a bad signature is refused;
+#   the web app serves the chart and log pages and proxies the API;
 #   G1.6  each injected fault changes the telemetry within 60 s;
 #   G1.5  stopping the API and restarting the agent leaves no gap in the stored samples.
 set -euo pipefail
@@ -28,6 +30,8 @@ metric_above() { # <service> <metric> <threshold> <since>: SQL that is true once
   echo "SELECT max(m.value) > $3 FROM metric_samples m JOIN services s ON s.id = m.service_id
         WHERE s.name = '$1' AND m.metric = '$2' AND m.time > '$4'"
 }
+api() { curl -fsS "http://localhost:8000$1"; }
+count() { grep -o "$1" | wc -l; } # occurrences on stdin
 fault() { docker compose exec -T demo-app python -m infrawatch_demo_app.fault "$@" >/dev/null; }
 wait_for_points_since() {
   for _ in $(seq 1 30); do
@@ -59,8 +63,18 @@ wait_until 60 "checkout request metrics" "SELECT count(DISTINCT m.metric) = 3
   FROM metric_samples m JOIN services s ON s.id = m.service_id WHERE s.name = 'checkout'
   AND m.metric IN ('request_rate_per_s', 'error_rate_percent', 'latency_p95_ms')"
 
-echo "G1.3 (ingest side): logs arrive with correlation ids"
+echo "G1.3: logs arrive with correlation ids and are searchable by service, level, time and text"
 wait_until 60 "checkout logs" "SELECT count(*) > 0 AND bool_and(correlation_id IS NOT NULL) FROM log_entries"
+checks_start=$(utc_now)
+all="/logs?since=2000-01-01T00:00:00Z"
+found=$(api "${all}&service=checkout&level=info&q=completed&limit=5")
+[ "$(echo "${found}" | count '"correlation_id":"')" -ge 1 ]
+[ "$(echo "${found}" | count '"level":"info"')" = "$(echo "${found}" | count '"level"')" ]
+[ "$(api "${all}&service=demo-host")" = "[]" ]
+[ "$(api "${all}&until=2000-01-02T00:00:00Z")" = "[]" ]
+[ "$(api "${all}&q=nosuchwordanywhere")" = "[]" ]
+one_id=$(sql "SELECT correlation_id FROM log_entries LIMIT 1")
+[ "$(api "${all}&q=${one_id}" | count '"correlation_id"')" = 1 ]
 
 echo "G1.4: signed change events of every kind are stored; a bad signature is refused"
 secret=$(docker compose exec -T api printenv CHANGE_WEBHOOK_SECRET)
@@ -72,6 +86,21 @@ done
 [ "$(sql "SELECT count(DISTINCT kind) FROM change_events WHERE summary LIKE 'telemetry check %'")" = 3 ]
 refused=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/ingest/changes   -H "X-Signature-256: sha256=00" -H "Content-Type: application/json" -d "${body}")
 [ "${refused}" = 401 ]
+[ "$(api "/services/checkout/changes?since=${checks_start}" | count '"summary":"telemetry check ')" = 3 ]
+
+echo "Web: the chart and log pages load, and the browser's API route reaches the API"
+web="http://$(docker compose port web 3000)"
+curl -fsS -o /dev/null "${web}/telemetry"
+curl -fsS -o /dev/null "${web}/logs"
+services=$(curl -fsS "${web}/api/services")
+[ "${services}" = '["checkout","demo-host","payment-gateway"]' ] || { echo "::error::web app served services: ${services}"; exit 1; }
+# Polls: the demo app reports every 5 s, so the metric may not exist yet at the first look.
+for _ in $(seq 1 20); do
+  metrics=$(curl -fsS "${web}/api/services/checkout/metrics?since=${checks_start}" || true)
+  case "${metrics}" in *'"latency_p95_ms"'*) break ;; esac
+  sleep 3
+done
+case "${metrics}" in *'"latency_p95_ms"'*) ;; *) echo "::error::web app served checkout metrics: ${metrics}"; exit 1 ;; esac
 
 echo "G1.6: each fault changes the telemetry within 60 s"
 since=$(utc_now); fault error-burst --minutes 2

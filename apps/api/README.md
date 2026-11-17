@@ -2,7 +2,7 @@
 
 FastAPI service providing authentication and RBAC, telemetry ingest endpoints, the incident and workflow API, the WebSocket gateway and audit writing.
 
-> **Status:** telemetry ingest (milestone M2). Authentication, incidents and the rest follow; see [`docs/phase-1-plan.md`](../../docs/phase-1-plan.md).
+> **Status:** telemetry ingest and queries (milestone M2). Authentication, incidents and the rest follow; see [`docs/phase-1-plan.md`](../../docs/phase-1-plan.md).
 
 ## Telemetry ingest
 
@@ -25,6 +25,20 @@ curl -X POST http://localhost:8000/ingest/changes   -H "X-Signature-256: $signat
 ```
 
 A missing or wrong signature gets `401`. The `id` is chosen by the sender and makes a replayed request harmless.
+
+## Telemetry queries
+
+These are open until M3 puts every read endpoint behind login.
+
+| Endpoint | Returns |
+|---|---|
+| `GET /services` | Service names |
+| `GET /services/{service}/metrics?since=` | Names of the metrics reported since then |
+| `GET /services/{service}/metrics/{metric}?since=` | Samples, oldest first (newest 2,000) |
+| `GET /services/{service}/changes?since=` | Deploy, config and feature-flag events, oldest first (newest 500) |
+| `GET /logs?since=&until=&service=&level=&q=&limit=` | Log entries, newest first (200 by default, 1,000 at most) |
+
+`since` is required and, like `until`, must carry a time zone. `q` matches words in the message (English full-text search) or an exact correlation ID.
 
 ## Running locally
 

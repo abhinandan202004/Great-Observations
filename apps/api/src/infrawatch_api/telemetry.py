@@ -5,7 +5,7 @@ import hmac
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import AwareDatetime, BaseModel, Field, ValidationError
 from sqlalchemy import text
@@ -14,6 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 router = APIRouter(tags=["telemetry"])
 
 MAX_QUERY_POINTS = 2000
+MAX_CHANGE_MARKERS = 500
+
+Level = Literal["debug", "info", "warning", "error"]
 
 
 class MetricSample(BaseModel):
@@ -30,7 +33,7 @@ class MetricBatch(BaseModel):
 class LogEntry(BaseModel):
     id: UUID
     time: AwareDatetime
-    level: Literal["debug", "info", "warning", "error"]
+    level: Level
     message: str = Field(min_length=1, max_length=2000)
     correlation_id: str | None = Field(default=None, max_length=100)
 
@@ -55,6 +58,20 @@ class IngestResult(BaseModel):
 class MetricPoint(BaseModel):
     time: AwareDatetime
     value: float
+
+
+class ChangeMarker(BaseModel):
+    time: AwareDatetime
+    kind: str
+    summary: str
+
+
+class LogLine(BaseModel):
+    time: AwareDatetime
+    service: str
+    level: str
+    message: str
+    correlation_id: str | None
 
 
 bearer = HTTPBearer(auto_error=False)
@@ -146,7 +163,94 @@ async def ingest_change(request: Request) -> IngestResult:
     return IngestResult(accepted=1)
 
 
-# Unauthenticated until M3 puts every read endpoint behind login (phase-1-plan, M2 decisions).
+# The read endpoints below are unauthenticated until M3 puts them behind login
+# (phase-1-plan, M2 decisions).
+@router.get("/services")
+async def service_names(request: Request) -> list[str]:
+    engine: AsyncEngine = request.app.state.engine
+    async with engine.connect() as conn:
+        return list(await conn.scalars(text("SELECT name FROM services ORDER BY name")))
+
+
+@router.get("/services/{service}/metrics")
+async def metric_names(service: str, since: AwareDatetime, request: Request) -> list[str]:
+    """Names of the metrics the service has reported since ``since``."""
+    engine: AsyncEngine = request.app.state.engine
+    async with engine.connect() as conn:
+        sid = await service_id(conn, service)
+        names = await conn.scalars(
+            text(
+                "SELECT DISTINCT metric FROM metric_samples"
+                " WHERE service_id = :sid AND time >= :since ORDER BY metric"
+            ),
+            {"sid": sid, "since": since},
+        )
+        return list(names)
+
+
+@router.get("/services/{service}/changes")
+async def change_markers(
+    service: str, since: AwareDatetime, request: Request
+) -> list[ChangeMarker]:
+    """Deploy, config and feature-flag events since ``since``, oldest first (newest 500)."""
+    engine: AsyncEngine = request.app.state.engine
+    async with engine.connect() as conn:
+        sid = await service_id(conn, service)
+        rows = await conn.execute(
+            text(
+                "SELECT time, kind, summary FROM ("
+                "  SELECT time, kind, summary FROM change_events"
+                "  WHERE service_id = :sid AND time >= :since"
+                "  ORDER BY time DESC LIMIT :limit"
+                ") newest ORDER BY time"
+            ),
+            {"sid": sid, "since": since, "limit": MAX_CHANGE_MARKERS},
+        )
+        return [ChangeMarker(time=r.time, kind=r.kind, summary=r.summary) for r in rows]
+
+
+@router.get("/logs")
+async def search_logs(
+    request: Request,
+    since: AwareDatetime,
+    until: AwareDatetime | None = None,
+    service: str | None = None,
+    level: Level | None = None,
+    q: Annotated[str | None, Query(max_length=200)] = None,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 200,
+) -> list[LogLine]:
+    """Log entries, newest first. ``q`` matches words in the message, or a correlation id.
+
+    shortcut: one fixed query whose optional filters are skipped when null, so the
+    planner cannot always use the level and full-text indexes; build the WHERE clause
+    per request if searches over long time ranges become slow.
+    """
+    engine: AsyncEngine = request.app.state.engine
+    async with engine.connect() as conn:
+        rows = await conn.execute(
+            text(
+                "SELECT l.time, s.name AS service, l.level, l.message, l.correlation_id"
+                " FROM log_entries l JOIN services s ON s.id = l.service_id"
+                " WHERE l.time >= :since"
+                " AND (CAST(:until AS timestamptz) IS NULL OR l.time <= :until)"
+                " AND (CAST(:service AS text) IS NULL OR s.name = :service)"
+                " AND (CAST(:level AS text) IS NULL OR l.level = :level)"
+                " AND (CAST(:q AS text) IS NULL OR l.correlation_id = :q"
+                "      OR to_tsvector('english', l.message) @@ websearch_to_tsquery('english', :q))"
+                " ORDER BY l.time DESC LIMIT :limit"
+            ),
+            {
+                "since": since,
+                "until": until,
+                "service": service or None,
+                "level": level,
+                "q": q or None,
+                "limit": limit,
+            },
+        )
+        return [LogLine(**row._mapping) for row in rows]
+
+
 @router.get("/services/{service}/metrics/{metric}")
 async def metric_series(
     service: str, metric: str, since: AwareDatetime, request: Request

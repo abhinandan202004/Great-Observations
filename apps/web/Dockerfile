@@ -15,6 +15,9 @@ RUN npm ci --no-audit --no-fund
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Where the /api rewrite sends requests: the API's name on the Compose network.
+ARG API_URL=http://api:8000
+ENV API_URL=${API_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY apps/web/ ./
 RUN npm run build
