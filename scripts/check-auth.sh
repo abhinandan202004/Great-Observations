@@ -50,10 +50,21 @@ stakeholder=$(login "$work/stakeholder" stakeholder@infrawatch.local)
 [ "$(code -H "Authorization: Bearer ${stakeholder}" "${api}/services")" = 403 ] || { echo "::error::stakeholder could read telemetry"; exit 1; }
 [ "$(code -H "Authorization: Bearer ${token}" "${api}/logs?${since}")" = 200 ] || { echo "::error::admin was refused logs"; exit 1; }
 
+# Access requests: anyone may ask; only an admin may list or approve; the approved account signs in.
+newbie="new-$(date +%s)@example.test"
+request_id=$(curl -fsS "${json[@]}" -d "{\"email\":\"${newbie}\",\"display_name\":\"New Person\"}" "${api}/access-requests" \
+  | sed -E 's/.*"id":"([^"]+)".*/\1/')
+[ "$(code -H "Authorization: Bearer ${viewer}" "${api}/access-requests")" = 403 ] || { echo "::error::viewer could list access requests"; exit 1; }
+[ "$(code -H "Authorization: Bearer ${token}" "${api}/access-requests")" = 200 ] || { echo "::error::admin could not list access requests"; exit 1; }
+[ "$(code -H "Authorization: Bearer ${token}" "${json[@]}" -d '{"role":"viewer","password":"long-enough-pw-1"}' \
+  "${api}/access-requests/${request_id}/approve")" = 201 ] || { echo "::error::admin could not approve the request"; exit 1; }
+[ "$(code "${json[@]}" -d "{\"email\":\"${newbie}\",\"password\":\"long-enough-pw-1\"}" "${api}/auth/login")" = 200 ] \
+  || { echo "::error::the approved account cannot sign in"; exit 1; }
+
 # Every sign-in, the reuse and the logout left an audit row.
 audit=$(docker compose exec -T db psql -U postgres -d infrawatch -tAc \
   "SELECT coalesce(string_agg(DISTINCT action, ',' ORDER BY action), '') FROM audit_log")
-for action in auth.login auth.refresh auth.refresh_reuse auth.logout; do
+for action in auth.login auth.refresh auth.refresh_reuse auth.logout access_request.create access_request.approve; do
   case "${audit}" in *"${action}"*) ;; *) echo "::error::no audit row for ${action}: ${audit}"; exit 1 ;; esac
 done
 
