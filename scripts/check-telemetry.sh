@@ -92,8 +92,15 @@ echo "Web: the chart and log pages load, and the browser's API route reaches the
 web="http://$(docker compose port web 3000)"
 curl -fsS -o /dev/null "${web}/telemetry"
 curl -fsS -o /dev/null "${web}/logs"
-[ "$(curl -fsS "${web}/api/services")" = '["checkout","demo-host","payment-gateway"]' ]
-[ "$(curl -fsS "${web}/api/services/checkout/metrics?since=${checks_start}" | count 'latency_p95_ms')" = 1 ]
+services=$(curl -fsS "${web}/api/services")
+[ "${services}" = '["checkout","demo-host","payment-gateway"]' ] || { echo "::error::web app served services: ${services}"; exit 1; }
+# Polls: the demo app reports every 5 s, so the metric may not exist yet at the first look.
+for _ in $(seq 1 20); do
+  metrics=$(curl -fsS "${web}/api/services/checkout/metrics?since=${checks_start}" || true)
+  case "${metrics}" in *'"latency_p95_ms"'*) break ;; esac
+  sleep 3
+done
+case "${metrics}" in *'"latency_p95_ms"'*) ;; *) echo "::error::web app served checkout metrics: ${metrics}"; exit 1 ;; esac
 
 echo "G1.6: each fault changes the telemetry within 60 s"
 since=$(utc_now); fault error-burst --minutes 2
