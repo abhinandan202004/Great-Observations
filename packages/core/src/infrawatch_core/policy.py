@@ -1,11 +1,11 @@
 """Permission matrix from context.md section 4, as pure functions.
 
-Each role grants a capability in one or more scopes. Scoped rules (own team, lead, resolver,
-caller) are encoded here, but only the unscoped check is enforced by the API before M4 adds
-incident endpoints.
+Each role grants a capability in one scope. ``allows`` asks whether a role holds a capability
+at all; ``permits`` asks whether it holds it for one incident, given how the user relates to it.
 """
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from enum import StrEnum
 
 from infrawatch_core.roles import Role
@@ -120,3 +120,26 @@ def scopes(roles: Iterable[Role], capability: Capability) -> frozenset[Scope]:
 def allows(roles: Iterable[Role], capability: Capability) -> bool:
     """True if any of the roles holds the capability in some scope."""
     return bool(scopes(roles, capability))
+
+
+@dataclass(frozen=True)
+class Relation:
+    """How one user relates to one incident."""
+
+    caller: bool = False  # raised it
+    team_member: bool = False  # belongs to a team with a task on it
+    lead: bool = False  # leads a team with a task on it
+    resolver: bool = False  # moved it to Resolved
+
+
+def permits(roles: Iterable[Role], capability: Capability, relation: Relation) -> bool:
+    """True if any of the roles holds the capability in a scope this relation satisfies."""
+    held = {
+        Scope.ANY: True,
+        Scope.OWN_TEAM: relation.team_member,
+        Scope.OWN_INCIDENTS: relation.caller,
+        Scope.LEAD: relation.lead,
+        Scope.RESOLVER: relation.resolver,
+        Scope.CALLER: relation.caller,
+    }
+    return any(held[scope] for scope in scopes(roles, capability))

@@ -52,6 +52,10 @@ jobs:
       - name: Unit tests with coverage (pytest)
         run: uv run --frozen pytest --cov --cov-report=term --cov-report=xml
 
+      # G9.1: the state machine, permissions, SLA and escalation live in infrawatch_core.
+      - name: Coverage floor for the core domain logic
+        run: uv run --frozen coverage report --include="*/infrawatch_core/*" --fail-under=95
+
   web:
     name: Web lint, type-check and tests
     runs-on: ubuntu-24.04
@@ -116,6 +120,9 @@ jobs:
 
       - name: Sign-in works, refresh tokens rotate and reuse ends the login (G8.2)
         run: bash scripts/check-auth.sh
+
+      - name: The incident lifecycle and its permissions behave
+        run: bash scripts/check-incidents.sh
 
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
