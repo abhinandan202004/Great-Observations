@@ -10,6 +10,7 @@ from typing import NamedTuple
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from infrawatch_api.auth import hash_password
 from infrawatch_core.roles import Role
 
 
@@ -75,6 +76,15 @@ async def seed(database_url: str) -> None:
                 "ON CONFLICT (email) DO NOTHING"
             ),
             [{"email": u.email, "display_name": u.display_name} for u in USERS],
+        )
+        # Only where no password is set yet, so a rerun never changes one.
+        password = os.environ["DEMO_USER_PASSWORD"]
+        await conn.execute(
+            text(
+                "UPDATE users SET password_hash = :hash "
+                "WHERE email = :email AND password_hash IS NULL"
+            ),
+            [{"email": u.email, "hash": hash_password(password)} for u in USERS],
         )
         await conn.execute(
             text(

@@ -11,6 +11,8 @@ dependencies = [
     "fastapi>=0.120",
     "sqlalchemy[asyncio]>=2.0.44",
     "uvicorn[standard]>=0.38",
+    "argon2-cffi>=25.1.0",
+    "pyjwt>=2.15.1",
 ]
 
 [project.scripts]
