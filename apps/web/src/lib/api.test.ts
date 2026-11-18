@@ -14,3 +14,10 @@ it("refreshes the sign-in once after a 401 and retries with the new token", asyn
   await expect(getJson<string[]>("/services")).resolves.toEqual(["checkout"]);
   expect(fetch.mock.calls[2][1].headers).toEqual({ Authorization: "Bearer new" });
 });
+
+it("shows the API's reason for a refusal", async () => {
+  const refusal = JSON.stringify({ detail: "Only the caller may do this" });
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(refusal, { status: 403 })));
+
+  await expect(getJson("/incidents")).rejects.toThrow("Only the caller may do this");
+});

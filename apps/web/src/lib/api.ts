@@ -23,13 +23,21 @@ export async function call<T>(method: string, path: string, body?: unknown): Pro
     throw new Error("Sign in again");
   }
   if (!response.ok) {
-    throw new Error(`The API answered ${response.status} for ${path}`);
+    // The API explains refusals in `detail`; validation errors carry a list there instead.
+    const detail = await response.json().then(
+      (data) => data?.detail,
+      () => undefined,
+    );
+    throw new Error(
+      typeof detail === "string" ? detail : `The API answered ${response.status} for ${path}`,
+    );
   }
   return response.json();
 }
 
 export const getJson = <T>(path: string) => call<T>("GET", path);
 export const postJson = <T>(path: string, body: unknown) => call<T>("POST", path, body);
+export const putJson = <T>(path: string, body: unknown) => call<T>("PUT", path, body);
 
 export function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString();

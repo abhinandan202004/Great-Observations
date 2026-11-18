@@ -14,10 +14,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <nav aria-label="Main">
           <Link href="/">InfraWatch</Link>
+          <Link href="/incidents">Incidents</Link>
           <Link href="/telemetry">Telemetry</Link>
           <Link href="/logs">Logs</Link>
           <Link href="/login">Sign in</Link>
           <Link href="/admin/access-requests">Access requests</Link>
+          <Link href="/admin/sla">SLA policy</Link>
         </nav>
         {children}
       </body>
