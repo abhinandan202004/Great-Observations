@@ -1,4 +1,4 @@
-from infrawatch_core.policy import Capability, Scope, allows, scopes
+from infrawatch_core.policy import Capability, Relation, Scope, allows, permits, scopes
 from infrawatch_core.roles import Role
 
 
@@ -42,3 +42,37 @@ def test_roles_combine_their_scopes() -> None:
 
 def test_no_roles_means_no_capability() -> None:
     assert not allows([], Capability.VIEW_TELEMETRY)
+
+
+def test_developer_updates_status_only_on_their_teams_incidents() -> None:
+    assert permits([Role.DEVELOPER], Capability.UPDATE_STATUS, Relation(team_member=True))
+    assert not permits([Role.DEVELOPER], Capability.UPDATE_STATUS, Relation(caller=True))
+
+
+def test_production_support_updates_status_only_on_incidents_they_raised() -> None:
+    assert permits([Role.PRODUCTION_SUPPORT], Capability.UPDATE_STATUS, Relation(caller=True))
+    assert not permits(
+        [Role.PRODUCTION_SUPPORT], Capability.UPDATE_STATUS, Relation(team_member=True)
+    )
+
+
+def test_incident_commander_updates_any_incident() -> None:
+    assert permits([Role.INCIDENT_COMMANDER], Capability.UPDATE_STATUS, Relation())
+
+
+def test_only_the_caller_may_close_whatever_their_role() -> None:
+    everyone_else = Relation(team_member=True, lead=True, resolver=True)
+
+    assert all(permits([r], Capability.CLOSE_INCIDENT, Relation(caller=True)) for r in Role)
+    assert not any(permits([r], Capability.CLOSE_INCIDENT, everyone_else) for r in Role)
+
+
+def test_assignment_needs_a_lead_unless_incident_commander() -> None:
+    assert permits([Role.SRE], Capability.ASSIGN, Relation(lead=True))
+    assert not permits([Role.SRE], Capability.ASSIGN, Relation(team_member=True))
+    assert permits([Role.INCIDENT_COMMANDER], Capability.ASSIGN, Relation())
+
+
+def test_runbook_writing_needs_the_resolver() -> None:
+    assert permits([Role.DEVELOPER], Capability.WRITE_RUNBOOK, Relation(resolver=True))
+    assert not permits([Role.DEVELOPER], Capability.WRITE_RUNBOOK, Relation(team_member=True))

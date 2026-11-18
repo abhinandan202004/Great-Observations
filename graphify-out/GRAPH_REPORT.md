@@ -1,17 +1,17 @@
-# Graph Report - Great-Observations  (2026-11-17)
+# Graph Report - Great-Observations  (2026-11-18)
 
 ## Corpus Check
-- 104 files · ~37,916 words
+- 115 files · ~41,938 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 18 file(s) not represented in the graph (top: (none) 8, .typed 5, .example 1)
 
 ## Summary
-- 836 nodes · 1435 edges · 89 communities (54 shown, 35 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 118 edges (avg confidence: 0.9)
+- 935 nodes · 1729 edges · 94 communities (56 shown, 38 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 150 edges (avg confidence: 0.91)
 - Token cost: 222,340 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `21b78c13`
+- Built from commit: `eb6504b7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -59,7 +59,7 @@
 - infrawatch_api/telemetry.py
 - on
 - compose-smoke
-- dependencies
+- incidents.py
 - collections_abc
 - Incident lifecycle states and transitions (section 6.4)
 - Sample
@@ -69,7 +69,7 @@
 - Architecture decision records index
 - AI layer design (section 6.7)
 - backoff_delay
-- eslint.config.mjs
+- api.ts
 - InfraWatch web application (Next.js)
 - vitest
 - check-audit.sh
@@ -78,10 +78,10 @@
 - ci-passed
 - check-telemetry.sh
 - environment
-- api
+- depends_on
 - Reporter
 - test_permission_matrix.py
-- environment
+- healthcheck
 - Gate G3 Incident lifecycle (9 checks)
 - environment
 - ADR 0008: Job queue and transactional outbox in PostgreSQL
@@ -90,20 +90,23 @@
 - infrawatch_demo_app/telemetry.py
 - ADR 0009: WebSockets for real-time updates
 - Buffer
-- create_app
+- check-incidents.sh
 - check-auth.sh
+- env.py
+- environment
+- login/page.tsx
 
 ## God Nodes (most connected - your core abstractions)
-1. `InfraWatch 2.0 README overview` - 20 edges
-2. `Architecture decision records index` - 20 edges
-3. `Sample` - 19 edges
-4. `Buffer` - 17 edges
-5. `compilerOptions` - 16 edges
-6. `Capability` - 13 edges
-7. `allows()` - 12 edges
-8. `test_readings_continue_while_delivery_is_stuck()` - 12 edges
-9. `_start_session()` - 11 edges
-10. `search_logs()` - 11 edges
+1. `Capability` - 27 edges
+2. `InfraWatch 2.0 README overview` - 20 edges
+3. `Architecture decision records index` - 20 edges
+4. `Sample` - 19 edges
+5. `change_status()` - 18 edges
+6. `Buffer` - 17 edges
+7. `record()` - 17 edges
+8. `compilerOptions` - 16 edges
+9. `post()` - 15 edges
+10. `get_incident()` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Compose architecture and principal data entities` --semantically_similar_to--> `Compose architecture and principal data entities (section 7)`  [INFERRED] [semantically similar]
@@ -128,11 +131,11 @@
 - **Four-stage flow across all specification documents** — readme_four_stage_flow, context_four_stage_flow, docs_specification_overview [INFERRED 0.85]
 - **Three-phase delivery roadmap P1/P2/P3** — readme_roadmap, context_phasing, docs_specification_phasing, docs_phase_1_plan_scope [INFERRED 0.85]
 
-## Communities (89 total, 35 thin omitted)
+## Communities (94 total, 38 thin omitted)
 
 ### Community 0 - "devDependencies"
-Cohesion: 0.11
-Nodes (24): devDependencies, jsdom@^29.1.1, @testing-library/dom@^10.4.2, @types/node@^22.20.5, @types/react@^19, @types/react-dom@^19, typescript@^5, vite-tsconfig-paths@^6.1.1 (+16 more)
+Cohesion: 0.09
+Nodes (29): eslintConfig, devDependencies, eslint@^9.39.5, eslint-config-next@16.4.5, jsdom@^29.1.1, @testing-library/dom@^10.4.2, @types/node@^22.20.5, @types/react@^19 (+21 more)
 
 ### Community 1 - "Contributing to InfraWatch"
 Cohesion: 0.21
@@ -155,24 +158,24 @@ Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 6 - "auth.py"
-Cohesion: 0.07
-Nodes (26): record(), check_password(), current_user_id(), hash_password(), _hash_refresh(), issue_access_token(), login(), LoginRequest (+18 more)
+Cohesion: 0.06
+Nodes (35): post(), AccessRequestIn, ApprovalIn, approve_request(), create_user(), _create_user(), pending_requests(), reject_request() (+27 more)
 
 ### Community 7 - "with"
 Cohesion: 0.29
 Nodes (7): with, cache, cache-dependency-path, enable-cache, fetch-depth, node-version, version
 
 ### Community 8 - "interval"
-Cohesion: 0.23
-Nodes (23): healthcheck, healthcheck, healthcheck, image, volumes, healthcheck, interval, retries (+15 more)
+Cohesion: 0.22
+Nodes (22): healthcheck, healthcheck, image, volumes, healthcheck, image, ports, interval (+14 more)
 
 ### Community 9 - "args"
-Cohesion: 0.15
-Nodes (19): build, image, volumes, MODULE, PACKAGE, args, context, dockerfile (+11 more)
+Cohesion: 0.19
+Nodes (17): build, build, image, ports, MODULE, PACKAGE, args, context (+9 more)
 
 ### Community 10 - "telemetry/page.tsx"
-Cohesion: 0.33
-Nodes (8): Change, Chart(), chartOption(), Point, TelemetryPage(), load(), formatTime(), getJson()
+Cohesion: 0.38
+Nodes (7): Change, Chart(), chartOption(), Point, TelemetryPage(), formatTime(), react
 
 ### Community 11 - "Workflow Permissions"
 Cohesion: 0.29
@@ -180,7 +183,7 @@ Nodes (7): secrets, permissions, contents, pull-requests, name, permissions, run
 
 ### Community 12 - "compose.yaml"
 Cohesion: 0.12
-Nodes (16): name, services, volumes, agent-buffer, db-data, objectstore-data, x-api-build, context (+8 more)
+Nodes (15): name, volumes, agent-buffer, db-data, objectstore-data, x-api-build, context, dockerfile (+7 more)
 
 ### Community 13 - "infrawatch_api/__main__.py"
 Cohesion: 0.22
@@ -199,8 +202,8 @@ Cohesion: 0.25
 Nodes (8): scripts, build, dev, lint, start, test, test:coverage, typecheck
 
 ### Community 17 - "infrawatch_demo_app/main.py"
-Cohesion: 0.27
-Nodes (5): checkout(), generate_traffic(), lifespan(), _NoHealthFilter, report()
+Cohesion: 0.19
+Nodes (13): checkout(), CheckoutResponse, create_app(), health(), post_checkout(), start_fault(), stop_fault(), FaultResponse (+5 more)
 
 ### Community 18 - "test_agent_delivery.py"
 Cohesion: 0.18
@@ -216,7 +219,7 @@ Nodes (3): M5 Static alerts and drafts, M9 Anomaly detection and dashboards, Gat
 
 ### Community 43 - "infrawatch_api/telemetry.py"
 Cohesion: 0.10
-Nodes (20): post(), change_markers(), ChangeEvent, ChangeMarker, ingest_change(), ingest_logs(), ingest_metrics(), IngestResult (+12 more)
+Nodes (19): change_markers(), ChangeEvent, ChangeMarker, ingest_change(), ingest_logs(), ingest_metrics(), IngestResult, LogBatch (+11 more)
 
 ### Community 44 - "on"
 Cohesion: 0.40
@@ -226,13 +229,13 @@ Nodes (5): on, pull_request, push, branches, branches
 Cohesion: 0.67
 Nodes (3): name, runs-on, compose-smoke
 
-### Community 46 - "dependencies"
-Cohesion: 0.29
-Nodes (7): dependencies, echarts@^6.1.0, react@19.3.0, react-dom@19.3.0, echarts, react, react-dom
+### Community 46 - "incidents.py"
+Cohesion: 0.10
+Nodes (23): load_roles(), require(), check(), change_severity(), change_status(), Detail, _detail(), get_incident() (+15 more)
 
 ### Community 47 - "collections_abc"
-Cohesion: 0.11
-Nodes (3): upgrade(), upgrade(), upgrade()
+Cohesion: 0.10
+Nodes (4): upgrade(), upgrade(), upgrade(), upgrade()
 
 ### Community 48 - "Incident lifecycle states and transitions (section 6.4)"
 Cohesion: 0.22
@@ -243,16 +246,16 @@ Cohesion: 0.16
 Nodes (4): Sample, Collector, collect_forever(), test_collector_reports_cpu_memory_disk_and_network()
 
 ### Community 50 - "layout.tsx"
-Cohesion: 0.25
-Nodes (4): nextConfig, next@16.4.5, metadata, next
+Cohesion: 0.14
+Nodes (10): nextConfig, dependencies, echarts@^6.1.0, next@16.4.5, react@19.3.0, react-dom@19.3.0, metadata, echarts (+2 more)
 
 ### Community 51 - "migrate"
-Cohesion: 0.29
-Nodes (7): condition, db, command, depends_on, image, restart, migrate
+Cohesion: 0.18
+Nodes (11): condition, db, image, ports, command, depends_on, image, restart (+3 more)
 
 ### Community 52 - "logs/page.tsx"
-Cohesion: 0.40
-Nodes (3): LEVELS, LogLine, LogsPage()
+Cohesion: 0.22
+Nodes (6): @testing-library/react@^16.3.3, LEVELS, LogLine, LogsPage(), HomePage(), @testing-library/react
 
 ### Community 53 - "Architecture decision records index"
 Cohesion: 0.12
@@ -262,17 +265,17 @@ Nodes (16): Audit immutability and non-functional requirements, Python CI checks
 Cohesion: 0.50
 Nodes (3): AI layer two-tier design, AI layer design (section 6.7), AI layer (retrieval + reasoning)
 
-### Community 56 - "eslint.config.mjs"
-Cohesion: 0.33
-Nodes (5): eslintConfig, eslint@^9.39.5, eslint-config-next@16.4.5, eslint, eslint-config-next
+### Community 56 - "api.ts"
+Cohesion: 0.22
+Nodes (14): AccessRequestsPage(), Decision(), approve(), reject(), Pending, ROLES, RequestAccessPage(), submit() (+6 more)
 
 ### Community 57 - "InfraWatch web application (Next.js)"
 Cohesion: 0.29
 Nodes (7): Next.js agent rules (AGENTS.md), InfraWatch web application (Next.js), ADR 0014: Defer full dashboard builder to Phase 3, Prebuilt health dashboard per service (Phase 1), Simple panel builder with persistent layout, Phase 1 implementation plan, Phase 1 scope (44 P1 checks plus G10.1/G10.2/walkthrough)
 
 ### Community 58 - "vitest"
-Cohesion: 0.24
-Nodes (6): @testing-library/react@^16.3.3, vitest@^5.1.0, GET(), HomePage(), @testing-library/react, vitest
+Cohesion: 0.40
+Nodes (3): vitest@^5.1.0, GET(), vitest
 
 ### Community 60 - "faults.py"
 Cohesion: 0.24
@@ -294,9 +297,9 @@ Nodes (7): api(), fault(), check-telemetry.sh script, sql(), utc_now(), wait_for
 Cohesion: 0.20
 Nodes (10): RUSTFS_ACCESS_KEY, RUSTFS_ADDRESS, RUSTFS_CONSOLE_ADDRESS, RUSTFS_CONSOLE_ENABLE, RUSTFS_SECRET_KEY, environment, image, ports (+2 more)
 
-### Community 65 - "api"
-Cohesion: 0.29
-Nodes (7): build, depends_on, image, ports, migrate, condition, api
+### Community 65 - "depends_on"
+Cohesion: 0.67
+Nodes (3): depends_on, migrate, condition
 
 ### Community 66 - "Reporter"
 Cohesion: 0.22
@@ -304,11 +307,11 @@ Nodes (7): now(), Reporter, sign(), test_flush_signs_changes_and_keeps_data_when
 
 ### Community 67 - "test_permission_matrix.py"
 Cohesion: 0.09
-Nodes (21): load_roles(), require(), check(), _path(), test_each_role_gets_the_matrix_answer(), test_no_token_is_refused_before_any_role_check(), _url(), test_every_role_has_exactly_one_demo_user() (+13 more)
+Nodes (26): _path(), test_each_role_gets_the_matrix_answer(), test_no_token_is_refused_before_any_role_check(), _url(), test_every_role_has_exactly_one_demo_user(), allows(), Capability, permits() (+18 more)
 
-### Community 68 - "environment"
-Cohesion: 0.18
-Nodes (12): environment, environment, environment, AGENT_SERVICE, CHANGE_WEBHOOK_SECRET, DATABASE_URL, DEMO_USER_PASSWORD, INGEST_API_KEY (+4 more)
+### Community 68 - "healthcheck"
+Cohesion: 0.22
+Nodes (10): environment, healthcheck, image, volumes, environment, AGENT_SERVICE, CHANGE_WEBHOOK_SECRET, INGEST_API_KEY (+2 more)
 
 ### Community 69 - "Gate G3 Incident lifecycle (9 checks)"
 Cohesion: 0.17
@@ -324,14 +327,14 @@ Nodes (8): infrawatch-worker package, Outbox idempotency key, ADR 0008: Job queu
 
 ### Community 72 - "test_ingest_auth.py"
 Cohesion: 0.07
-Nodes (20): create_app(), health(), HealthResponse, lifespan(), client(), test_me_needs_a_bearer_token(), test_refresh_and_logout_need_the_csrf_header(), app() (+12 more)
+Nodes (19): create_app(), health(), HealthResponse, lifespan(), test_me_needs_a_bearer_token(), test_refresh_and_logout_need_the_csrf_header(), app(), client() (+11 more)
 
 ### Community 73 - "infrawatch-api FastAPI service"
 Cohesion: 0.32
 Nodes (8): infrawatch-api FastAPI service, infrawatch-demo-app, Branch protection on main, ci-passed aggregate status check, ADR 0016: Continuous integration and container builds, GitHub Actions ci.yml workflow, gitleaks secret history scan, Shared python.Dockerfile
 
 ### Community 74 - "infrawatch_demo_app/telemetry.py"
-Cohesion: 0.19
+Cohesion: 0.21
 Nodes (3): summarise(), test_summarise_of_an_empty_window_has_no_latency(), test_summarise_reports_rate_errors_and_p95()
 
 ### Community 75 - "ADR 0009: WebSockets for real-time updates"
@@ -342,29 +345,37 @@ Nodes (8): Bounded per-connection send queue (100 msgs), 20-second WebSocket hea
 Cohesion: 0.21
 Nodes (3): Buffer, deliver_forever(), flush()
 
-### Community 77 - "create_app"
-Cohesion: 0.31
-Nodes (8): CheckoutResponse, create_app(), health(), post_checkout(), start_fault(), stop_fault(), FaultResponse, HealthResponse
+### Community 77 - "check-incidents.sh"
+Cohesion: 0.52
+Nodes (6): code(), expect(), fail(), move(), check-incidents.sh script, token()
+
+### Community 87 - "environment"
+Cohesion: 0.33
+Nodes (6): environment, DATABASE_URL, DEMO_USER_PASSWORD, INGEST_API_KEYS, JWT_SECRET, environment
+
+### Community 89 - "login/page.tsx"
+Cohesion: 0.83
+Nodes (3): LoginPage(), submit(), signIn()
 
 ## Knowledge Gaps
 - **60 isolated node(s):** `infrawatch-api`, `infrawatch-core`, `infrawatch-agent`, `infrawatch-demo-app`, `infrawatch-worker` (+55 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 316 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 334 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Architecture decision records index` connect `Architecture decision records index` to `Contributing to InfraWatch`, `InfraWatch 2.0 README overview`, `ADR 0011: Authentication and tokens`, `ADR 0008: Job queue and transactional outbox in PostgreSQL`, `infrawatch-api FastAPI service`, `ADR 0009: WebSockets for real-time updates`, `InfraWatch web application (Next.js)`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Are the 10 inferred relationships involving `Sample` (e.g. with `Collector` and `deliver_forever()`) actually correct?**
-  _`Sample` has 10 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `post()` connect `auth.py` to `infrawatch_api/telemetry.py`, `test_agent_entrypoint.py`, `Buffer`, `incidents.py`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Are the 22 inferred relationships involving `Capability` (e.g. with `require()` and `approve_request()`) actually correct?**
+  _`Capability` has 22 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `infrawatch-api`, `infrawatch-core`, `infrawatch-agent` to the rest of the system?**
   _60 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.1076923076923077 - nodes in this community are weakly interconnected._
-- **Why does `InfraWatch 2.0 README overview` connect `InfraWatch 2.0 README overview` to `Contributing to InfraWatch`, `Incident lifecycle states and transitions (section 6.4)`, `Architecture decision records index`, `AI layer design (section 6.7)`, `InfraWatch web application (Next.js)`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
-- **Are the 8 inferred relationships involving `Buffer` (e.g. with `collect_forever()` and `flush()`) actually correct?**
-  _`Buffer` has 8 INFERRED edges - model-reasoned connections that need verification._
+  _Cohesion score 0.08870967741935484 - nodes in this community are weakly interconnected._
+- **Why does `Architecture decision records index` connect `Architecture decision records index` to `Contributing to InfraWatch`, `InfraWatch 2.0 README overview`, `ADR 0011: Authentication and tokens`, `ADR 0008: Job queue and transactional outbox in PostgreSQL`, `infrawatch-api FastAPI service`, `ADR 0009: WebSockets for real-time updates`, `InfraWatch web application (Next.js)`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Are the 10 inferred relationships involving `Sample` (e.g. with `Collector` and `deliver_forever()`) actually correct?**
+  _`Sample` has 10 INFERRED edges - model-reasoned connections that need verification._
 - **Should `InfraWatch 2.0 README overview` be split into smaller, more focused modules?**
   _Cohesion score 0.08923076923076922 - nodes in this community are weakly interconnected._

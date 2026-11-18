@@ -192,4 +192,6 @@ All 44 P1 checks are assigned exactly once.
 | M0 | Implemented | G9.4 is verified once the CI workflow has run on GitHub and the branch ruleset described in `CONTRIBUTING.md` is active. |
 | M1 | Implemented | G0.1 to G0.3 are verified by the `compose-smoke` CI job: clean `.env.example` start, every health check green within 120 s, seed run twice with row counts checked. |
 | M2 | Implemented | PR 1 (metric ingest, hypertable, agent), PR 2 (demo-app telemetry, log and change-event ingest, fault injection) and PR 3 (charts with change markers at `/telemetry`, log search at `/logs`) verify G1.1 to G1.6 in the `compose-smoke` job through `scripts/check-telemetry.sh`. The chart drawing itself is covered by a unit test of the chart options, not by a browser test; Playwright arrives with G9.3. |
-| M3 to M10 | Not started | |
+| M3 | Implemented | G8.2 and G8.4 are verified in the `compose-smoke` job by `scripts/check-audit.sh` and `scripts/check-auth.sh`; the permission matrix test covers every route for all eight roles. |
+| M4 | In progress | PR 1: incident model, seven-state machine, raise, scoped status updates, caller-only close and reopen, severity changes, status-only view, core coverage floor of 95% in CI. Verified by `scripts/check-incidents.sh`. PR 2 (team tasks, assignment, SLA) and PR 3 (web pages) follow. |
+| M5 to M10 | Not started | |

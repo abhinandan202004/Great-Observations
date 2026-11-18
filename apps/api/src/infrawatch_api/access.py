@@ -19,7 +19,7 @@ async def load_roles(request: Request, user_id: UUID) -> frozenset[Role]:
                 text("SELECT role FROM user_roles WHERE user_id = :id"), {"id": user_id}
             )
         ).all()
-    # shortcut: roles only; team lead and team scopes are checked from M4, when incidents exist.
+    # Team and lead scopes depend on the incident, so incident routes check them with permits().
     return frozenset(Role(row.role) for row in rows)
 
 
