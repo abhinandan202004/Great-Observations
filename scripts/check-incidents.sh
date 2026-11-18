@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# G3.2, G3.3, G3.7, G3.8 and G8.5 against the running API: raise, the status lifecycle with its
-# scoped rules, caller-only close and reopen, severity changes, the status-only view and audit rows.
+# G3.2 to G3.8 and G8.5 against the running API: raise, the status lifecycle with its scoped rules,
+# caller-only close and reopen, severity, team tasks, assignment, checklists, SLA timers and policy,
+# the status-only view and audit rows.
 set -euo pipefail
 
 api=http://localhost:8000
@@ -28,6 +29,7 @@ sre=$(token sre)             # Core Infrastructure: not on this incident
 commander=$(token commander)
 viewer=$(token viewer)
 stakeholder=$(token stakeholder)
+admin=$(token admin)
 
 raise='{"title":"Checkout errors","impact":"Some customers cannot pay","description":"5xx on POST /checkout","severity":"P2","service":"checkout"}'
 expect 403 "$(code -H "Authorization: Bearer ${developer}" "${json[@]}" -d "${raise}" "${api}/incidents")" \
@@ -70,10 +72,54 @@ expect 403 "$(code -H "Authorization: Bearer ${developer}" "${json[@]}" -d '{"se
 expect 200 "$(code -H "Authorization: Bearer ${commander}" "${json[@]}" -d '{"severity":"P1"}' \
   "${api}/incidents/${id}/severity")" "the incident commander could not change the severity"
 
+# G3.4 and G3.5: teams join and work in parallel; a lead assigns only within their own team.
+post() { # <token> <path under the incident> <body>: prints the HTTP status
+  code -H "Authorization: Bearer $1" "${json[@]}" -d "$3" "${api}/incidents/${id}$2"
+}
+teams=$(curl -fsS -H "Authorization: Bearer ${developer}" "${api}/teams")
+team_of() { sed -E "s/.*\"id\":\"([^\"]+)\",\"name\":\"$1\".*/\1/" <<<"${teams}"; }
+user_of() { sed -E "s/.*\"id\":\"([^\"]+)\",\"display_name\":\"$1\".*/\1/" <<<"${teams}"; }
+payments=$(team_of "Payments Platform")
+infra=$(team_of "Core Infrastructure")
+dev_id=$(user_of "Demo Developer")
+sre_id=$(user_of "Demo SRE")
+
+expect 403 "$(post "${sre}" /teams "{\"team_id\":\"${infra}\"}")" "an uninvolved team added itself"
+expect 201 "$(post "${developer}" /teams "{\"team_id\":\"${infra}\"}")" "the owning team could not bring in another team"
+expect 409 "$(post "${developer}" /teams "{\"team_id\":\"${infra}\"}")" "a team was added twice"
+expect 200 "$(post "${developer}" "/teams/${payments}/assignee" "{\"user_id\":\"${dev_id}\"}")" \
+  "the payments lead could not assign within their team"
+expect 403 "$(post "${developer}" "/teams/${infra}/assignee" "{\"user_id\":\"${sre_id}\"}")" \
+  "a lead assigned another team's task"
+expect 422 "$(post "${sre}" "/teams/${infra}/assignee" "{\"user_id\":\"${dev_id}\"}")" \
+  "a lead assigned someone outside their team"
+expect 200 "$(post "${sre}" "/teams/${infra}/assignee" "{\"user_id\":\"${sre_id}\"}")" \
+  "the infra lead could not assign within their team"
+expect 201 "$(post "${developer}" "/teams/${payments}/checklist" '{"text":"Roll back the last deploy"}')" \
+  "the team could not add to its checklist"
+expect 403 "$(post "${sre}" "/teams/${payments}/checklist" '{"text":"Not my team"}')" \
+  "another team changed this team's checklist"
+item=$(curl -fsS -H "Authorization: Bearer ${developer}" "${api}/incidents/${id}" \
+  | sed -E 's/.*"id":"([^"]+)","text":"Roll back the last deploy".*/\1/')
+expect 200 "$(post "${developer}" "/checklist/${item}" '{"done":true}')" "the team could not tick its checklist"
+expect 403 "$(post "${sre}" "/checklist/${item}" '{"done":false}')" "another team ticked this team's checklist"
+
+# G3.6: the acknowledge clock stopped at the acknowledgement; the reopen restarted the resolve clock.
+body=$(curl -fsS -H "Authorization: Bearer ${developer}" "${api}/incidents/${id}")
+grep -q '"acknowledge":{"due":"[^"]*","stopped_at":"' <<<"${body}" || fail "the acknowledge clock did not stop"
+grep -q '"resolve":{"due":"[^"]*","stopped_at":null' <<<"${body}" || fail "the resolve clock is not running"
+grep -q '"breached":false' <<<"${body}" || fail "a fresh incident shows a breach"
+sla='{"acknowledge_minutes":15,"resolve_minutes":480}'
+expect 403 "$(code -X PUT -H "Authorization: Bearer ${developer}" "${json[@]}" -d "${sla}" \
+  "${api}/sla-policies/P2")" "a developer changed the SLA policy"
+expect 200 "$(code -X PUT -H "Authorization: Bearer ${admin}" "${json[@]}" -d "${sla}" \
+  "${api}/sla-policies/P2")" "the admin could not set the SLA policy"
+
 audit=$(docker compose exec -T db psql -U postgres -d infrawatch -tAc \
-  "SELECT string_agg(DISTINCT action, ',') FROM audit_log WHERE target_id = '${id}'")
-for action in incident.raise incident.forward incident.regression incident.reopen incident.severity; do
+  "SELECT string_agg(DISTINCT action, ',') FROM audit_log")
+for action in incident.raise incident.forward incident.regression incident.reopen incident.severity \
+  incident.team_add incident.assign checklist.add checklist.check sla_policy.update; do
   case ",${audit}," in *",${action},"*) ;; *) fail "no audit row for ${action}: ${audit}" ;; esac
 done
 
-echo "incidents: raise, lifecycle, scoped updates, caller-only close and reopen, status-only view and audit rows all behave"
+echo "incidents: lifecycle, scoped updates, caller-only close and reopen, team tasks, SLA, status-only view and audit rows all behave"
