@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "docs/phase-1-plan.md": {
-    "mtime": 1794907523.2134254,
-    "seen": 1794908080.4571304,
-    "ast_hash": "52cdf60300c3426371fc11227297e716",
+    "mtime": 1795029710.5167542,
+    "seen": 1795029766.0403283,
+    "ast_hash": "ef4adf822863b9b2250a0fb9085ca03f",
     "semantic_hash": ""
   },
   "docs/specification.html": {
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/access.py": {
-    "mtime": 1794911610.2545924,
-    "seen": 1794911905.3720584,
-    "ast_hash": "fe87c265a21463a37f232cfb53f64f8d",
+    "mtime": 1794951261.6835659,
+    "seen": 1795029766.0399673,
+    "ast_hash": "7ed5840c1342c7e85c7dbfbde97cc96e",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/audit.py": {
@@ -612,9 +612,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_permission_matrix.py": {
-    "mtime": 1794950987.4682746,
-    "seen": 1794951251.4978895,
-    "ast_hash": "8134bb2ba403a0a0637cc0657c67b31b",
+    "mtime": 1795029456.598543,
+    "seen": 1795029766.0399673,
+    "ast_hash": "dc1f8ae9cbe05bb2bcc8c2437b9f1b0a",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/policy.py": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/incidents.py": {
-    "mtime": 1794950987.7616491,
-    "seen": 1794951251.4978895,
-    "ast_hash": "e52a1138181ac65dee4c522a6abba0ef",
+    "mtime": 1795029709.3987956,
+    "seen": 1795029766.0399673,
+    "ast_hash": "76100ffdc8defe5a165d54403880c786",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0006_incidents.py": {
@@ -690,9 +690,27 @@
     "semantic_hash": ""
   },
   "scripts/check-incidents.sh": {
-    "mtime": 1794951075.8414311,
-    "seen": 1794951251.4978895,
-    "ast_hash": "e9f84652d3dbcd630822c43bf5abb76d",
+    "mtime": 1795029598.2266867,
+    "seen": 1795029766.0403283,
+    "ast_hash": "086d86be1ee0c63a11ae72c8264c26b7",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/migrations/versions/0007_checklists_and_sla.py": {
+    "mtime": 1795029353.0119066,
+    "seen": 1795029766.0399673,
+    "ast_hash": "1160cdd86547bb75484717753a338bc7",
+    "semantic_hash": ""
+  },
+  "packages/core/src/infrawatch_core/sla.py": {
+    "mtime": 1795029456.9471278,
+    "seen": 1795029766.0403283,
+    "ast_hash": "9bdb3180e4b41b42b3094e4db73607ee",
+    "semantic_hash": ""
+  },
+  "packages/core/tests/test_sla.py": {
+    "mtime": 1795029308.1990798,
+    "seen": 1795029766.0403283,
+    "ast_hash": "d7ee7d315430aafaa1af7d1639173358",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

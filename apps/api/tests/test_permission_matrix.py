@@ -26,11 +26,18 @@ GATED = {
     ("GET", "/incidents"): Capability.VIEW_INCIDENT_STATUS,
     ("GET", "/incidents/{incident_id}"): Capability.VIEW_INCIDENT_STATUS,
     ("POST", "/incidents/{incident_id}/severity"): Capability.CHANGE_SEVERITY,
+    ("GET", "/teams"): Capability.VIEW_INCIDENT_DETAIL,
+    ("GET", "/sla-policies"): Capability.VIEW_INCIDENT_STATUS,
+    ("PUT", "/sla-policies/{severity}"): Capability.MANAGE_USERS_TEAMS_RULES,
 }
 # Routes whose answer depends on how the user relates to the incident (caller, team, lead).
 # The scoped rules are unit-tested in packages/core and run live in scripts/check-incidents.sh.
 SCOPED = {
     ("POST", "/incidents/{incident_id}/status"),
+    ("POST", "/incidents/{incident_id}/teams"),
+    ("POST", "/incidents/{incident_id}/teams/{team_id}/assignee"),
+    ("POST", "/incidents/{incident_id}/teams/{team_id}/checklist"),
+    ("POST", "/incidents/{incident_id}/checklist/{item_id}"),
 }
 # Routes that check something other than a role: the caller's sign-in, or the ingest key.
 NOT_ROLE_GATED = {
@@ -52,6 +59,9 @@ def _path(template: str) -> str:
         .replace("{metric}", "cpu_percent")
         .replace("{request_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
         .replace("{incident_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+        .replace("{team_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+        .replace("{item_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+        .replace("{severity}", "P2")
     )
 
 
