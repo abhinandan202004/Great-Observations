@@ -3,6 +3,7 @@
   --foreground: #171717;
   --muted: #5f6368;
   --series: #2a78d6;
+  --critical: #c5221f;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -12,6 +13,7 @@
     --foreground: #ededed;
     --muted: #9aa0a6;
     --series: #3987e5;
+    --critical: #f28b82;
   }
 }
 
@@ -83,4 +85,64 @@ td {
   text-align: left;
   vertical-align: top;
   border-bottom: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.stack label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.status-bar li {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.status-bar li.done {
+  color: var(--foreground);
+}
+
+.status-bar li[aria-current="step"] {
+  color: var(--background);
+  background: var(--series);
+  border-color: var(--series);
+  font-weight: 600;
+}
+
+.breach {
+  color: var(--critical);
+}
+
+.task {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  border-radius: 0.5rem;
+}
+
+.task h3 {
+  margin-top: 0;
+}
+
+.checklist {
+  padding-left: 0;
+  list-style: none;
+}
+
+.prose {
+  white-space: pre-wrap;
 }
