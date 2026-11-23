@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Incident } from "./incident";
 
 vi.mock("next/navigation", () => ({ useParams: () => ({ id: "abc" }) }));
+// jsdom has no canvas; the figure's caption and table carry the same information.
+vi.mock("../../telemetry/chart", () => ({ Chart: () => null }));
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -48,6 +50,18 @@ describe("Incident", () => {
         caller: "Demo Production Support",
         teams: [{ ...task, checklist: [] }],
         timeline: [],
+        alerts: [
+          {
+            rule: "Checkout error rate high",
+            metric: "error_rate_percent",
+            comparator: "above",
+            threshold: 15,
+            breach_started_at: "2026-11-19T08:59:00Z",
+            last_fired_at: "2026-11-19T09:00:00Z",
+            fire_count: 2,
+            snapshot: [{ time: "2026-11-19T09:00:00Z", value: 42 }],
+          },
+        ],
       },
       [{ id: "t1", name: "Payments Platform", members: [] }],
     );
@@ -55,5 +69,8 @@ describe("Incident", () => {
 
     expect(await screen.findByRole("button", { name: "Move to acknowledged" })).toBeDefined();
     expect(screen.getByRole("region", { name: "Payments Platform" })).toBeDefined();
+    const figure = screen.getByRole("figure");
+    expect(figure.textContent).toContain('"Checkout error rate high" fired 2 times');
+    expect(screen.getByRole("table", { name: /error_rate_percent on checkout, frozen/ })).toBeDefined();
   });
 });

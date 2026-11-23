@@ -107,13 +107,14 @@ jobs:
           docker compose exec -T api python -m infrawatch_api.seed
           docker compose exec -T api python -m infrawatch_api.seed
 
-      - name: Check seeded rows (teams | roles | services | team leads)
+      - name: Check seeded rows (teams | roles | services | team leads | alert rules)
         run: |
           counts=$(docker compose exec -T db sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U postgres -d infrawatch -tAc "
             SELECT (SELECT count(*) FROM teams), (SELECT count(DISTINCT role) FROM user_roles),
-                   (SELECT count(*) FROM services), (SELECT count(*) FROM memberships WHERE is_lead)"')
+                   (SELECT count(*) FROM services), (SELECT count(*) FROM memberships WHERE is_lead),
+                   (SELECT count(*) FROM alert_rules)"')
           echo "Seeded: ${counts}"
-          test "${counts}" = "2|8|3|2"
+          test "${counts}" = "2|8|3|2|3"
 
       - name: The audit log is insert-only for the app role and the trigger (G8.4, database layer)
         run: bash scripts/check-audit.sh
@@ -123,6 +124,9 @@ jobs:
 
       - name: The incident lifecycle and its permissions behave
         run: bash scripts/check-incidents.sh
+
+      - name: Static alert rules fire, create drafts and deduplicate (G2.3, G2.6)
+        run: bash scripts/check-alerts.sh
 
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh

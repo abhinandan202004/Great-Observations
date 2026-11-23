@@ -124,11 +124,36 @@ class TeamTask(BaseModel):
     checklist: list[ChecklistItem]
 
 
+class SnapshotPoint(BaseModel):
+    time: datetime
+    value: float
+
+
+class FiredAlert(BaseModel):
+    """An alert and the metric points frozen when it first fired."""
+
+    rule: str
+    metric: str
+    comparator: str
+    threshold: float
+    breach_started_at: datetime
+    last_fired_at: datetime
+    fire_count: int
+    snapshot: list[SnapshotPoint]
+
+
+FIRED_ALERT = (
+    "SELECT a.id, r.name AS rule, a.metric, r.comparator, r.threshold, a.breach_started_at, "
+    "a.last_fired_at, a.fire_count, a.snapshot FROM alerts a JOIN alert_rules r ON r.id = a.rule_id"
+)
+
+
 class Detail(Summary):
     description: str
     caller: str
     teams: list[TeamTask]
     timeline: list[StatusEvent]
+    alerts: list[FiredAlert]
 
 
 class Member(BaseModel):
@@ -187,7 +212,7 @@ async def _summary(conn: AsyncConnection, incident_id: UUID) -> Summary:
     return found[0]
 
 
-async def _detail(conn: AsyncConnection, incident_id: UUID) -> Detail:
+async def load_detail(conn: AsyncConnection, incident_id: UUID) -> Detail:
     summary = await _summary(conn, incident_id)
     extra = (
         await conn.execute(
@@ -230,6 +255,13 @@ async def _detail(conn: AsyncConnection, incident_id: UUID) -> Detail:
         caller=extra.caller,
         teams=[TeamTask(**t._mapping, checklist=checklists[t.team_id]) for t in teams],
         timeline=[StatusEvent.model_validate(r, from_attributes=True) for r in timeline],
+        alerts=[
+            FiredAlert.model_validate(a, from_attributes=True)
+            for a in await conn.execute(
+                text(f"{FIRED_ALERT} WHERE a.incident_id = :id ORDER BY a.fired_at"),
+                {"id": incident_id},
+            )
+        ],
     )
 
 
@@ -280,49 +312,61 @@ async def raise_incident(
     actor: Annotated[UUID, Depends(require(Capability.RAISE_INCIDENT))],
 ) -> Detail:
     async with request.app.state.engine.begin() as conn:
-        service = (
-            await conn.execute(
-                text("SELECT id, team_id FROM services WHERE name = :name"), {"name": body.service}
-            )
-        ).first()
-        if service is None:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Unknown service")
-        incident_id: UUID = (
-            await conn.execute(
-                text(
-                    "INSERT INTO incidents "
-                    "(title, impact, description, severity, service_id, caller_id) "
-                    "VALUES (:title, :impact, :description, :severity, :service_id, :actor) "
-                    "RETURNING id"
-                ),
-                {
-                    **body.model_dump(exclude={"service"}),
-                    "service_id": service.id,
-                    "actor": actor,
-                },
-            )
-        ).scalar_one()
+        incident_id = await open_incident(conn, body, actor)
+        return await load_detail(conn, incident_id)
+
+
+async def open_incident(
+    conn: AsyncConnection, body: RaiseIn, actor: UUID, alert_id: UUID | None = None
+) -> UUID:
+    """Insert the incident, its Raised event and the owning team's task, and audit it."""
+    service = (
+        await conn.execute(
+            text("SELECT id, team_id FROM services WHERE name = :name"), {"name": body.service}
+        )
+    ).first()
+    if service is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Unknown service")
+    incident_id: UUID = (
         await conn.execute(
             text(
-                "INSERT INTO status_events (incident_id, actor_id, to_status) "
-                "VALUES (:id, :actor, 'raised')"
+                "INSERT INTO incidents "
+                "(title, impact, description, severity, service_id, caller_id) "
+                "VALUES (:title, :impact, :description, :severity, :service_id, :actor) "
+                "RETURNING id"
             ),
-            {"id": incident_id, "actor": actor},
+            {
+                **body.model_dump(exclude={"service"}),
+                "service_id": service.id,
+                "actor": actor,
+            },
         )
-        # The service's owning team starts with a task; other teams join through /teams.
-        await conn.execute(
-            text("INSERT INTO team_tasks (incident_id, team_id) VALUES (:id, :team)"),
-            {"id": incident_id, "team": service.team_id},
-        )
-        await record(
-            conn,
-            actor_id=actor,
-            action="incident.raise",
-            target_type="incident",
-            target_id=str(incident_id),
-            detail={"severity": body.severity.value, "service": body.service},
-        )
-        return await _detail(conn, incident_id)
+    ).scalar_one()
+    await conn.execute(
+        text(
+            "INSERT INTO status_events (incident_id, actor_id, to_status) "
+            "VALUES (:id, :actor, 'raised')"
+        ),
+        {"id": incident_id, "actor": actor},
+    )
+    # The service's owning team starts with a task; other teams join through /teams.
+    await conn.execute(
+        text("INSERT INTO team_tasks (incident_id, team_id) VALUES (:id, :team)"),
+        {"id": incident_id, "team": service.team_id},
+    )
+    await record(
+        conn,
+        actor_id=actor,
+        action="incident.raise",
+        target_type="incident",
+        target_id=str(incident_id),
+        detail={
+            "severity": body.severity.value,
+            "service": body.service,
+            "alert": str(alert_id or ""),
+        },
+    )
+    return incident_id
 
 
 @router.get("/incidents", dependencies=[Depends(require(Capability.VIEW_INCIDENT_STATUS))])
@@ -341,7 +385,7 @@ async def get_incident(
     roles = await access.load_roles(request, user)
     async with request.app.state.engine.connect() as conn:
         if allows(roles, Capability.VIEW_INCIDENT_DETAIL):
-            return await _detail(conn, incident_id)
+            return await load_detail(conn, incident_id)
         return await _summary(conn, incident_id)
 
 
@@ -409,7 +453,7 @@ async def change_status(
             target_id=str(incident_id),
             detail={"from": current.value, "to": body.status.value, "reason": reason or ""},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.post("/incidents/{incident_id}/severity")
@@ -441,7 +485,7 @@ async def change_severity(
             target_id=str(incident_id),
             detail={"from": row.severity, "to": body.severity.value},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.post("/incidents/{incident_id}/teams", status_code=status.HTTP_201_CREATED)
@@ -479,7 +523,7 @@ async def add_team(
             target_id=str(incident_id),
             detail={"team": team},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.post("/incidents/{incident_id}/teams/{team_id}/assignee")
@@ -520,7 +564,7 @@ async def assign(
             target_id=str(task),
             detail={"from": str(before or ""), "to": str(body.user_id)},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.post(
@@ -552,7 +596,7 @@ async def add_checklist_item(
             target_id=str(item),
             detail={"text": body.text},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.post("/incidents/{incident_id}/checklist/{item_id}")
@@ -591,7 +635,7 @@ async def check_item(
             target_id=str(item_id),
             detail={"done": str(body.done).lower()},
         )
-        return await _detail(conn, incident_id)
+        return await load_detail(conn, incident_id)
 
 
 @router.get("/teams", dependencies=[Depends(require(Capability.VIEW_INCIDENT_DETAIL))])

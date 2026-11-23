@@ -12,6 +12,7 @@ import {
   type Team,
   type TeamTask,
 } from "@/lib/incidents";
+import { AlertFigure } from "../../drafts/alert-figure";
 import { Clock } from "../clock";
 
 type Act = (path: string, body: unknown) => Promise<void>;
@@ -148,6 +149,15 @@ function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: 
       <h2>Description</h2>
       <p className="prose">{incident.description}</p>
       <p className="status">Raised by {incident.caller}</p>
+
+      {incident.alerts.length > 0 && (
+        <>
+          <h2>Alerts</h2>
+          {incident.alerts.map((alert) => (
+            <AlertFigure key={alert.breach_started_at} alert={alert} service={incident.service} />
+          ))}
+        </>
+      )}
 
       <h2>Teams</h2>
       {incident.teams.map((task) => (

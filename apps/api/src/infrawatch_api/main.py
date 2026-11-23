@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from infrawatch_api import __version__, accounts, auth, incidents, telemetry
+from infrawatch_api import __version__, accounts, auth, drafts, incidents, telemetry
 
 
 class HealthResponse(BaseModel):
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(accounts.router)
     app.include_router(incidents.router)
+    app.include_router(drafts.router)
 
     @app.get("/health", tags=["operations"])
     def health() -> HealthResponse:

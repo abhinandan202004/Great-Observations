@@ -29,6 +29,11 @@ GATED = {
     ("GET", "/teams"): Capability.VIEW_INCIDENT_DETAIL,
     ("GET", "/sla-policies"): Capability.VIEW_INCIDENT_STATUS,
     ("PUT", "/sla-policies/{severity}"): Capability.MANAGE_USERS_TEAMS_RULES,
+    ("GET", "/drafts"): Capability.RAISE_INCIDENT,
+    ("POST", "/drafts/{alert_id}/raise"): Capability.RAISE_INCIDENT,
+    ("POST", "/drafts/{alert_id}/dismiss"): Capability.RAISE_INCIDENT,
+    ("GET", "/alert-rules"): Capability.VIEW_TELEMETRY,
+    ("PUT", "/alert-rules/{rule_id}"): Capability.MANAGE_USERS_TEAMS_RULES,
 }
 # Routes whose answer depends on how the user relates to the incident (caller, team, lead).
 # The scoped rules are unit-tested in packages/core and run live in scripts/check-incidents.sh.
@@ -62,6 +67,8 @@ def _path(template: str) -> str:
         .replace("{team_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
         .replace("{item_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
         .replace("{severity}", "P2")
+        .replace("{alert_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+        .replace("{rule_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
     )
 
 

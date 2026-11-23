@@ -116,6 +116,12 @@ services:
         PACKAGE: infrawatch-worker
         MODULE: infrawatch_worker
     image: infrawatch-worker:local
+    environment:
+      DATABASE_URL: postgresql+asyncpg://infrawatch_app:${DB_APP_PASSWORD}@db:5432/infrawatch
+      ALERT_EVAL_SECONDS: ${ALERT_EVAL_SECONDS:-15}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     healthcheck: *python-health
 
   agent:
