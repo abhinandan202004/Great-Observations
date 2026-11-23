@@ -131,6 +131,9 @@ jobs:
       - name: Email goes out per major event with the on-call in CC (G4.3, G4.4, G4.5, G4.7)
         run: bash scripts/check-notifications.sh
 
+      - name: Unacknowledged incidents escalate along the rotation (G4.6)
+        run: bash scripts/check-escalation.sh
+
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
 

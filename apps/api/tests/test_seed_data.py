@@ -2,8 +2,13 @@ from infrawatch_api.seed import RULES, SERVICES, TEAMS, USERS
 from infrawatch_core.roles import Role
 
 
-def test_every_role_has_exactly_one_demo_user() -> None:
-    assert sorted(u.role for u in USERS) == sorted(Role)
+def test_every_role_has_a_demo_user() -> None:
+    assert {u.role for u in USERS} == set(Role)
+
+
+def test_each_team_has_someone_besides_its_lead() -> None:
+    for team in TEAMS:
+        assert len([u for u in USERS if u.team == team]) >= 2
 
 
 def test_every_team_has_a_lead() -> None:

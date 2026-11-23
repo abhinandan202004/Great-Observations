@@ -68,15 +68,15 @@ class CheckIn(BaseModel):
     done: bool
 
 
-class SlaPolicy(BaseModel):
-    severity: Severity
-    acknowledge_minutes: int = Field(ge=1, le=MAX_MINUTES)
-    resolve_minutes: int = Field(ge=1, le=MAX_MINUTES)
-
-
 class SlaPolicyIn(BaseModel):
     acknowledge_minutes: int = Field(ge=1, le=MAX_MINUTES)
     resolve_minutes: int = Field(ge=1, le=MAX_MINUTES)
+    # None: this severity never escalates. Left out of a request: unchanged.
+    escalate_minutes: int | None = Field(default=None, ge=1, le=MAX_MINUTES)
+
+
+class SlaPolicy(SlaPolicyIn):
+    severity: Severity
 
 
 class SlaTimer(BaseModel):
@@ -149,12 +149,21 @@ FIRED_ALERT = (
 )
 
 
+class EscalationRecord(BaseModel):
+    time: datetime
+    team: str
+    step: int
+    from_person: str
+    to_person: str
+
+
 class Detail(Summary):
     description: str
     caller: str
     teams: list[TeamTask]
     timeline: list[StatusEvent]
     alerts: list[FiredAlert]
+    escalations: list[EscalationRecord]
 
 
 class Member(BaseModel):
@@ -260,6 +269,19 @@ async def load_detail(conn: AsyncConnection, incident_id: UUID) -> Detail:
             FiredAlert.model_validate(a, from_attributes=True)
             for a in await conn.execute(
                 text(f"{FIRED_ALERT} WHERE a.incident_id = :id ORDER BY a.fired_at"),
+                {"id": incident_id},
+            )
+        ],
+        escalations=[
+            EscalationRecord.model_validate(e, from_attributes=True)
+            for e in await conn.execute(
+                text(
+                    "SELECT e.escalated_at AS time, t.name AS team, e.step, "
+                    "f.display_name AS from_person, d.display_name AS to_person "
+                    "FROM escalations e JOIN teams t ON t.id = e.team_id "
+                    "JOIN users f ON f.id = e.from_user_id JOIN users d ON d.id = e.to_user_id "
+                    "WHERE e.incident_id = :id ORDER BY e.id"
+                ),
                 {"id": incident_id},
             )
         ],
@@ -681,12 +703,16 @@ async def set_sla_policy(
                 {"severity": severity.value},
             )
         ).one()
+        after = body.model_dump()
+        if "escalate_minutes" not in body.model_fields_set:
+            after["escalate_minutes"] = before.escalate_minutes
         await conn.execute(
             text(
                 "UPDATE sla_policies SET acknowledge_minutes = :acknowledge_minutes, "
-                "resolve_minutes = :resolve_minutes WHERE severity = :severity"
+                "resolve_minutes = :resolve_minutes, escalate_minutes = :escalate_minutes "
+                "WHERE severity = :severity"
             ),
-            {**body.model_dump(), "severity": severity.value},
+            {**after, "severity": severity.value},
         )
         await record(
             conn,
@@ -695,8 +721,10 @@ async def set_sla_policy(
             target_type="sla_policy",
             target_id=severity.value,
             detail={
-                "from": f"{before.acknowledge_minutes}/{before.resolve_minutes}",
-                "to": f"{body.acknowledge_minutes}/{body.resolve_minutes}",
+                "from": f"{before.acknowledge_minutes}/{before.resolve_minutes}"
+                f"/{before.escalate_minutes}",
+                "to": f"{after['acknowledge_minutes']}/{after['resolve_minutes']}"
+                f"/{after['escalate_minutes']}",
             },
         )
-    return SlaPolicy(severity=severity, **body.model_dump())
+    return SlaPolicy(severity=severity, **after)
