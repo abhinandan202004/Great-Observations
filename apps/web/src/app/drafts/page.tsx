@@ -130,8 +130,12 @@ function DraftCard({ draft, onDismissed }: { draft: Draft; onDismissed: () => vo
           </select>
         </div>
         <div className="filters">
-          <button type="submit" disabled={pending}>
-            Raise incident<span className="visually-hidden"> for {draft.rule}</span>
+          <button
+            type="submit"
+            disabled={pending}
+            aria-label={`Raise incident for ${draft.rule}`}
+          >
+            Raise incident
           </button>
           <button
             type="button"
@@ -142,8 +146,9 @@ function DraftCard({ draft, onDismissed }: { draft: Draft; onDismissed: () => vo
                 onDismissed();
               })
             }
+            aria-label={`Dismiss the draft for ${draft.rule}`}
           >
-            Dismiss<span className="visually-hidden"> the draft for {draft.rule}</span>
+            Dismiss
           </button>
         </div>
       </form>

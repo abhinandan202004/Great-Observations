@@ -37,6 +37,7 @@ GATED = {
     ("GET", "/oncall"): Capability.VIEW_INCIDENT_DETAIL,
     ("GET", "/incidents/{incident_id}/attachments"): Capability.VIEW_INCIDENT_DETAIL,
     ("GET", "/attachments/{attachment_id}/file"): Capability.VIEW_INCIDENT_DETAIL,
+    ("GET", "/outbox/undelivered"): Capability.MANAGE_USERS_TEAMS_RULES,
 }
 # Routes whose answer depends on how the user relates to the incident (caller, team, lead).
 # The scoped rules are unit-tested in packages/core and run live in scripts/check-incidents.sh.

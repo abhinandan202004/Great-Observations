@@ -184,3 +184,30 @@ async def set_rotation(
             },
         )
     return next(t for t in await list_on_call(request) if t.team_id == team_id)
+
+
+class UndeliveredEmail(BaseModel):
+    id: int
+    kind: str
+    subject: str
+    to_addresses: list[str]
+    created_at: datetime
+    attempts: int
+    next_attempt_at: datetime
+    last_error: str | None
+
+
+@router.get(
+    "/outbox/undelivered",
+    dependencies=[Depends(require(Capability.MANAGE_USERS_TEAMS_RULES))],
+)
+async def undelivered_email(request: Request) -> list[UndeliveredEmail]:
+    """Email still waiting to be sent, oldest first, so the Admin can see a mail outage."""
+    async with request.app.state.engine.connect() as conn:
+        rows = await conn.execute(
+            text(
+                "SELECT id, kind, subject, to_addresses, created_at, attempts, next_attempt_at, "
+                "last_error FROM outbox WHERE sent_at IS NULL ORDER BY id LIMIT 100"
+            )
+        )
+        return [UndeliveredEmail.model_validate(r, from_attributes=True) for r in rows]

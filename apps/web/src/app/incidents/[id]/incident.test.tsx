@@ -25,7 +25,8 @@ const summary = {
 };
 
 function answer(...bodies: unknown[]) {
-  const fetch = vi.fn();
+  // Anything asked for beyond these (attachments, metrics, logs) gets an empty list.
+  const fetch = vi.fn(() => Promise.resolve(new Response("[]")));
   for (const body of bodies) fetch.mockResolvedValueOnce(new Response(JSON.stringify(body)));
   vi.stubGlobal("fetch", fetch);
 }
@@ -50,6 +51,9 @@ describe("Incident", () => {
         caller: "Demo Production Support",
         teams: [{ ...task, checklist: [] }],
         timeline: [],
+        escalations: [
+          { time: "2026-11-19T09:10:00Z", team: "Payments Platform", step: 1, from_person: "Asha", to_person: "Ben" },
+        ],
         alerts: [
           {
             rule: "Checkout error rate high",
@@ -72,5 +76,6 @@ describe("Incident", () => {
     const figure = screen.getByRole("figure");
     expect(figure.textContent).toContain('"Checkout error rate high" fired 2 times');
     expect(screen.getByRole("table", { name: /error_rate_percent on checkout, frozen/ })).toBeDefined();
+    expect(screen.getByText(/passed it from Asha to Ben \(escalation 1\)/)).toBeDefined();
   });
 });
