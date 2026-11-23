@@ -34,7 +34,7 @@ class Scope(StrEnum):
     OWN_TEAM = "own_team"
     OWN_INCIDENTS = "own_incidents"
     LEAD = "lead"  # team lead of the incident's team (a membership attribute)
-    RESOLVER = "resolver"  # resolved the incident
+    RESOLVER = "resolver"  # an engineer on a team working the incident (writes its runbook)
     CALLER = "caller"  # the incident's caller, as the spec defines it
 
 

@@ -17,6 +17,7 @@ from infrawatch_api import (
     drafts,
     incidents,
     oncall,
+    runbooks,
     telemetry,
 )
 
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(drafts.router)
     app.include_router(oncall.router)
     app.include_router(attachments.router)
+    app.include_router(runbooks.router)
 
     @app.get("/health", tags=["operations"])
     def health() -> HealthResponse:
