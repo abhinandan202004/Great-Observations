@@ -68,6 +68,11 @@ strict = true
 warn_unreachable = true
 pretty = true
 
+# boto3 ships no type hints; it is confined to infrawatch_api.storage.
+[[tool.mypy.overrides]]
+module = ["boto3", "botocore.*"]
+ignore_missing_imports = true
+
 # ---------------------------------------------------------------- pytest
 
 [tool.pytest.ini_options]

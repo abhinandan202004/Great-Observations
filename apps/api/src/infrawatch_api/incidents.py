@@ -288,7 +288,7 @@ async def load_detail(conn: AsyncConnection, incident_id: UUID) -> Detail:
     )
 
 
-async def _lock(
+async def lock_incident(
     conn: AsyncConnection, incident_id: UUID, actor: UUID, team_id: UUID | None = None
 ) -> tuple[Status, Relation]:
     """Lock the incident and say how the actor relates to it, or to one team's task on it."""
@@ -313,7 +313,7 @@ async def _lock(
     )
 
 
-def _open(current: Status) -> None:
+def ensure_open(current: Status) -> None:
     if current is Status.CLOSED:
         raise HTTPException(status.HTTP_409_CONFLICT, "A closed incident cannot change")
 
@@ -422,7 +422,7 @@ async def change_status(
 ) -> Detail:
     roles = await access.load_roles(request, actor)
     async with request.app.state.engine.begin() as conn:
-        current, relation = await _lock(conn, incident_id, actor)
+        current, relation = await lock_incident(conn, incident_id, actor)
         may_update = permits(roles, Capability.UPDATE_STATUS, relation)
         if not (may_update or relation.caller):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You are not working on this incident")
@@ -498,7 +498,7 @@ async def change_severity(
         ).first()
         if row is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "No such incident")
-        _open(Status(row.status))
+        ensure_open(Status(row.status))
         await conn.execute(
             text("UPDATE incidents SET severity = :severity WHERE id = :id"),
             {"severity": body.severity.value, "id": incident_id},
@@ -525,10 +525,10 @@ async def add_team(
 ) -> Detail:
     roles = await access.load_roles(request, actor)
     async with request.app.state.engine.begin() as conn:
-        current, relation = await _lock(conn, incident_id, actor)
+        current, relation = await lock_incident(conn, incident_id, actor)
         if not permits(roles, Capability.UPDATE_STATUS, relation):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You are not working on this incident")
-        _open(current)
+        ensure_open(current)
         team = await conn.scalar(
             text("SELECT name FROM teams WHERE id = :team"), {"team": body.team_id}
         )
@@ -565,10 +565,10 @@ async def assign(
 ) -> Detail:
     roles = await access.load_roles(request, actor)
     async with request.app.state.engine.begin() as conn:
-        current, relation = await _lock(conn, incident_id, actor, team_id)
+        current, relation = await lock_incident(conn, incident_id, actor, team_id)
         if not permits(roles, Capability.ASSIGN, relation):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Only this team's lead may assign")
-        _open(current)
+        ensure_open(current)
         task = await _task_id(conn, incident_id, team_id)
         member = await conn.scalar(
             text("SELECT 1 FROM memberships WHERE user_id = :user AND team_id = :team"),
@@ -608,10 +608,10 @@ async def add_checklist_item(
 ) -> Detail:
     roles = await access.load_roles(request, actor)
     async with request.app.state.engine.begin() as conn:
-        current, relation = await _lock(conn, incident_id, actor, team_id)
+        current, relation = await lock_incident(conn, incident_id, actor, team_id)
         if not permits(roles, Capability.UPDATE_STATUS, relation):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You are not on this team")
-        _open(current)
+        ensure_open(current)
         task = await _task_id(conn, incident_id, team_id)
         item = await conn.scalar(
             text("INSERT INTO checklist_items (task_id, text) VALUES (:task, :text) RETURNING id"),
@@ -648,10 +648,10 @@ async def check_item(
         )
         if team_id is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "No such checklist item")
-        current, relation = await _lock(conn, incident_id, actor, team_id)
+        current, relation = await lock_incident(conn, incident_id, actor, team_id)
         if not permits(roles, Capability.UPDATE_STATUS, relation):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You are not on this team")
-        _open(current)
+        ensure_open(current)
         await conn.execute(
             text("UPDATE checklist_items SET done = :done WHERE id = :item"),
             {"done": body.done, "item": item_id},

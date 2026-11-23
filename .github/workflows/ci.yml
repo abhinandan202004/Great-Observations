@@ -134,6 +134,9 @@ jobs:
       - name: Unacknowledged incidents escalate along the rotation (G4.6)
         run: bash scripts/check-escalation.sh
 
+      - name: Attachments are frozen, checked, stored and hidden from status-only roles (G4.1, G4.2)
+        run: bash scripts/check-attachments.sh
+
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
 

@@ -35,6 +35,8 @@ GATED = {
     ("GET", "/alert-rules"): Capability.VIEW_TELEMETRY,
     ("PUT", "/alert-rules/{rule_id}"): Capability.MANAGE_USERS_TEAMS_RULES,
     ("GET", "/oncall"): Capability.VIEW_INCIDENT_DETAIL,
+    ("GET", "/incidents/{incident_id}/attachments"): Capability.VIEW_INCIDENT_DETAIL,
+    ("GET", "/attachments/{attachment_id}/file"): Capability.VIEW_INCIDENT_DETAIL,
 }
 # Routes whose answer depends on how the user relates to the incident (caller, team, lead).
 # The scoped rules are unit-tested in packages/core and run live in scripts/check-incidents.sh.
@@ -45,6 +47,10 @@ SCOPED = {
     ("POST", "/incidents/{incident_id}/teams/{team_id}/checklist"),
     ("POST", "/incidents/{incident_id}/checklist/{item_id}"),
     ("PUT", "/teams/{team_id}/oncall"),
+    ("POST", "/incidents/{incident_id}/attachments/snapshot"),
+    ("POST", "/incidents/{incident_id}/attachments/logs"),
+    ("POST", "/incidents/{incident_id}/attachments/note"),
+    ("POST", "/incidents/{incident_id}/attachments/file"),
 }
 # Routes that check something other than a role: the caller's sign-in, or the ingest key.
 NOT_ROLE_GATED = {
@@ -71,6 +77,7 @@ def _path(template: str) -> str:
         .replace("{severity}", "P2")
         .replace("{alert_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
         .replace("{rule_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
+        .replace("{attachment_id}", "5f0c3a7e-1b2d-4c5e-9f00-0123456789ab")
     )
 
 
