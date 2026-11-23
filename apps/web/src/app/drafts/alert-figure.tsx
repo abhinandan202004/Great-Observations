@@ -1,20 +1,18 @@
 "use client";
 
 import { describe, type FiredAlert } from "@/lib/drafts";
-import { Chart } from "../telemetry/chart";
+import { Chart, type Point } from "../telemetry/chart";
 
-/** The frozen snapshot as a chart, a caption saying what breached, and the points as a table. */
-export function AlertFigure({ alert, service }: { alert: FiredAlert; service: string }) {
+/** Frozen metric points as a chart, a caption saying what they show, and the points as a table. */
+export function PointsFigure(props: { label: string; caption: string; points: Point[] }) {
   return (
     <figure className="alert-figure">
-      <Chart label={`${alert.metric} on ${service}, frozen snapshot`} points={alert.snapshot} changes={[]} />
-      <figcaption>{describe(alert, service)}</figcaption>
+      <Chart label={props.label} points={props.points} changes={[]} />
+      <figcaption>{props.caption}</figcaption>
       <details>
-        <summary>Snapshot data ({alert.snapshot.length} points)</summary>
+        <summary>Snapshot data ({props.points.length} points)</summary>
         <table>
-          <caption>
-            {alert.metric} on {service}, frozen when the alert first fired
-          </caption>
+          <caption>{props.label}</caption>
           <thead>
             <tr>
               <th scope="col">Time</th>
@@ -22,7 +20,7 @@ export function AlertFigure({ alert, service }: { alert: FiredAlert; service: st
             </tr>
           </thead>
           <tbody>
-            {alert.snapshot.map((point) => (
+            {props.points.map((point) => (
               <tr key={point.time}>
                 <td>
                   <time dateTime={point.time}>{new Date(point.time).toLocaleTimeString()}</time>
@@ -34,5 +32,15 @@ export function AlertFigure({ alert, service }: { alert: FiredAlert; service: st
         </table>
       </details>
     </figure>
+  );
+}
+
+export function AlertFigure({ alert, service }: { alert: FiredAlert; service: string }) {
+  return (
+    <PointsFigure
+      label={`${alert.metric} on ${service}, frozen when the alert first fired`}
+      caption={describe(alert, service)}
+      points={alert.snapshot}
+    />
   );
 }

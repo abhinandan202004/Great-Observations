@@ -209,3 +209,33 @@ td {
 .prose {
   white-space: pre-wrap;
 }
+
+/* Limited styling keeps the native progress bar and its accessibility intact. */
+progress {
+  accent-color: var(--series);
+  inline-size: min(100%, 20rem);
+}
+
+.rotation,
+.attachments {
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.rotation li {
+  margin-block: 0.25rem;
+}
+
+.rotation [aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.log-picker {
+  max-block-size: 16rem;
+  overflow: auto;
+}
+
+.file-name {
+  overflow-wrap: anywhere;
+}

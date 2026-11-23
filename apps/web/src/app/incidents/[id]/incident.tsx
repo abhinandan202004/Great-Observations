@@ -14,6 +14,7 @@ import {
 } from "@/lib/incidents";
 import { AlertFigure } from "../../drafts/alert-figure";
 import { Clock } from "../clock";
+import { Attachments } from "./attachments";
 
 type Act = (path: string, body: unknown) => Promise<void>;
 
@@ -159,6 +160,13 @@ function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: 
         </>
       )}
 
+      <Attachments
+        incidentId={incident.id}
+        service={incident.service}
+        raisedAt={incident.raised_at}
+        open={!closed}
+      />
+
       <h2>Teams</h2>
       {incident.teams.map((task) => (
         <Task
@@ -212,6 +220,21 @@ function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: 
           ))}
         </tbody>
       </table>
+
+      {incident.escalations.length > 0 && (
+        <>
+          <h2>Escalations</h2>
+          <ol>
+            {incident.escalations.map((e) => (
+              <li key={`${e.team}-${e.step}`}>
+                <time dateTime={e.time}>{new Date(e.time).toLocaleString()}</time>: not
+                acknowledged, so {e.team} passed it from {e.from_person} to {e.to_person}{" "}
+                (escalation {e.step})
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
     </>
   );
 }

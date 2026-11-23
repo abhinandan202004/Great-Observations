@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { getJson } from "./api";
+import { getJson, upload } from "./api";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -20,4 +20,42 @@ it("shows the API's reason for a refusal", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(refusal, { status: 403 })));
 
   await expect(getJson("/incidents")).rejects.toThrow("Only the caller may do this");
+});
+
+/** Answers each upload with the next status and body, reporting the body's size as progress. */
+function fakeXhr(...replies: [number, string][]) {
+  const sent: unknown[] = [];
+  class FakeXhr {
+    upload: { onprogress?: (event: ProgressEvent) => void } = {};
+    onload?: () => void;
+    status = 0;
+    responseText = "";
+    open() {}
+    setRequestHeader() {}
+    send(body: Blob) {
+      sent.push(body);
+      const [status, text] = replies.shift()!;
+      this.upload.onprogress?.({ lengthComputable: true, loaded: body.size, total: body.size } as ProgressEvent);
+      Object.assign(this, { status, responseText: text });
+      this.onload?.();
+    }
+  }
+  vi.stubGlobal("XMLHttpRequest", FakeXhr);
+  return sent;
+}
+
+it("uploads the file as the body and reports progress", async () => {
+  const sent = fakeXhr([201, JSON.stringify({ id: "a1" })]);
+  const progress: number[] = [];
+  const file = new Blob(["png bytes"]);
+
+  await expect(upload("/x", file, (done, total) => progress.push(done / total))).resolves.toEqual({ id: "a1" });
+  expect(sent).toEqual([file]);
+  expect(progress).toEqual([1]);
+});
+
+it("shows why the server refused an upload", async () => {
+  fakeXhr([415, JSON.stringify({ detail: "Only PNG, JPEG, GIF, WebP, PDF and .txt or .log text files are allowed" })]);
+
+  await expect(upload("/x", new Blob(["<html>"]), () => {})).rejects.toThrow(/Only PNG/);
 });

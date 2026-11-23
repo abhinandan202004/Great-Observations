@@ -3,7 +3,12 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { getJson, putJson } from "@/lib/api";
 
-type Policy = { severity: string; acknowledge_minutes: number; resolve_minutes: number };
+type Policy = {
+  severity: string;
+  acknowledge_minutes: number;
+  resolve_minutes: number;
+  escalate_minutes: number | null;
+};
 
 export default function SlaPolicyPage() {
   const [policies, setPolicies] = useState<Policy[] | null>(null);
@@ -22,6 +27,8 @@ export default function SlaPolicyPage() {
       const saved = await putJson<Policy>(`/sla-policies/${severity}`, {
         acknowledge_minutes: Number(form.get("acknowledge_minutes")),
         resolve_minutes: Number(form.get("resolve_minutes")),
+        // Blank means this severity never escalates.
+        escalate_minutes: form.get("escalate_minutes") ? Number(form.get("escalate_minutes")) : null,
       });
       setPolicies((all) => all?.map((p) => (p.severity === severity ? saved : p)) ?? null);
       setMessage(`Saved the ${severity} policy.`);
@@ -57,7 +64,18 @@ export default function SlaPolicyPage() {
               defaultValue={policy.resolve_minutes}
             />
           </label>
-          <button type="submit">Save</button>
+          <label>
+            Escalate after (minutes, blank for never){" "}
+            <input
+              name="escalate_minutes"
+              type="number"
+              min={1}
+              defaultValue={policy.escalate_minutes ?? ""}
+            />
+          </label>
+          <button type="submit" aria-label={`Save the ${policy.severity} policy`}>
+            Save
+          </button>
         </form>
       ))}
     </main>

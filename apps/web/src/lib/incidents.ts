@@ -56,6 +56,7 @@ export type Detail = Summary & {
     reopens: number | null;
   }[];
   alerts: FiredAlert[];
+  escalations: { time: string; team: string; step: number; from_person: string; to_person: string }[];
 };
 
 export type Team = {

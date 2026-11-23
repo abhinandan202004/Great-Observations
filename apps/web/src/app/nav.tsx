@@ -7,6 +7,7 @@ const LINKS = [
   ["/", "InfraWatch"],
   ["/incidents", "Incidents"],
   ["/drafts", "Drafts"],
+  ["/oncall", "On-call"],
   ["/telemetry", "Telemetry"],
   ["/logs", "Logs"],
   ["/login", "Sign in"],
