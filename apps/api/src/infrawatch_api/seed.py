@@ -28,6 +28,16 @@ class DemoService(NamedTuple):
     description: str
 
 
+class DemoRule(NamedTuple):
+    name: str
+    service: str
+    metric: str
+    comparator: str
+    threshold: float
+    duration_seconds: int
+    severity: str
+
+
 PAYMENTS = "Payments Platform"
 INFRA = "Core Infrastructure"
 
@@ -57,6 +67,14 @@ SERVICES = (
     DemoService(
         "demo-host", INFRA, "Host running the demo app; metrics reported by the collector agent."
     ),
+)
+
+# Thresholds sit well clear of the normal baseline (error rate under 10%, p95 under 250 ms) and
+# well inside what the faults produce (error-burst over 20%, dependency-latency over 500 ms).
+RULES = (
+    DemoRule("Checkout error rate high", "checkout", "error_rate_percent", "above", 15, 60, "P2"),
+    DemoRule("Checkout latency high", "checkout", "latency_p95_ms", "above", 500, 60, "P3"),
+    DemoRule("Demo host CPU saturated", "demo-host", "cpu_percent", "above", 90, 120, "P3"),
 )
 
 
@@ -109,12 +127,24 @@ async def seed(database_url: str) -> None:
             ),
             [s._asdict() for s in SERVICES],
         )
+        await conn.execute(
+            text(
+                "INSERT INTO alert_rules "
+                "(name, service_id, metric, comparator, threshold, duration_seconds, severity) "
+                "SELECT :name, id, :metric, :comparator, :threshold, :duration_seconds, :severity "
+                "FROM services WHERE name = :service ON CONFLICT (name) DO NOTHING"
+            ),
+            [r._asdict() for r in RULES],
+        )
     await engine.dispose()
 
 
 def main() -> None:
     asyncio.run(seed(os.environ["DATABASE_URL"]))
-    print(f"Seeded {len(TEAMS)} teams, {len(USERS)} users and {len(SERVICES)} services.")
+    print(
+        f"Seeded {len(TEAMS)} teams, {len(USERS)} users, {len(SERVICES)} services "
+        f"and {len(RULES)} alert rules."
+    )
 
 
 if __name__ == "__main__":

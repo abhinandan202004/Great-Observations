@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { moves, type SlaTimer, timerText } from "./incidents";
 
 const due = "2026-11-19T10:00:00Z";
@@ -46,5 +46,29 @@ describe("timerText", () => {
 
     expect(timerText(met, 0).text).toBe("met with 3m to spare");
     expect(timerText(late, 0)).toEqual({ text: "met 2m late", breached: true });
+  });
+
+  describe("with Intl.DurationFormat", () => {
+    const intl = Intl as unknown as { DurationFormat?: unknown };
+    afterEach(() => delete intl.DurationFormat);
+
+    it("hands the balanced span to the browser's localised formatter", () => {
+      const calls: unknown[] = [];
+      intl.DurationFormat = class {
+        constructor(...args: unknown[]) {
+          calls.push(args);
+        }
+        format(span: object) {
+          calls.push(span);
+          return "1 hr, 5 min";
+        }
+      };
+
+      expect(timerText(running, at("2026-11-19T08:55:00Z")).text).toBe("1 hr, 5 min left");
+      expect(calls).toEqual([
+        [undefined, { style: "narrow", minutesDisplay: "always" }],
+        { days: 0, hours: 1, minutes: 5 },
+      ]);
+    });
   });
 });

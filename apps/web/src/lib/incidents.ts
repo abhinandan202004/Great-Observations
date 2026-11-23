@@ -1,5 +1,7 @@
 /** Incident types from the API, and the lifecycle rules the page uses to offer moves. */
 
+import type { FiredAlert } from "./drafts";
+
 export const STATES = [
   "raised",
   "acknowledged",
@@ -53,6 +55,7 @@ export type Detail = Summary & {
     reason: string | null;
     reopens: number | null;
   }[];
+  alerts: FiredAlert[];
 };
 
 export type Team = {
@@ -93,10 +96,24 @@ export function timerText(timer: SlaTimer, now: number): { text: string; breache
     : { text: `overdue by ${span}`, breached: true };
 }
 
+type DurationFormat = new (
+  locale?: string,
+  options?: { style: "narrow"; minutesDisplay: "always" },
+) => { format(duration: { days: number; hours: number; minutes: number }): string };
+
+/** A span in days, hours and minutes, localised by Intl.DurationFormat where the browser has it. */
 function duration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const days = Math.floor(minutes / 1440);
-  const hours = Math.floor((minutes % 1440) / 60);
-  const parts = [days && `${days}d`, hours && `${hours}h`, `${minutes % 60}m`];
-  return parts.filter(Boolean).join(" ");
+  const total = Math.floor(seconds / 60);
+  const balanced = {
+    days: Math.floor(total / 1440),
+    hours: Math.floor((total % 1440) / 60),
+    minutes: total % 60,
+  };
+  // Not yet in this TypeScript's lib, and missing from Node 22 and pre-2025 browsers.
+  const Format = (Intl as unknown as { DurationFormat?: DurationFormat }).DurationFormat;
+  if (Format) {
+    return new Format(undefined, { style: "narrow", minutesDisplay: "always" }).format(balanced);
+  }
+  const { days, hours, minutes } = balanced;
+  return [days && `${days}d`, hours && `${hours}h`, `${minutes}m`].filter(Boolean).join(" ");
 }

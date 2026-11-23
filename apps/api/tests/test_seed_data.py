@@ -1,4 +1,4 @@
-from infrawatch_api.seed import SERVICES, TEAMS, USERS
+from infrawatch_api.seed import RULES, SERVICES, TEAMS, USERS
 from infrawatch_core.roles import Role
 
 
@@ -13,3 +13,7 @@ def test_every_team_has_a_lead() -> None:
 def test_users_and_services_reference_known_teams() -> None:
     assert {u.team for u in USERS if u.team} <= set(TEAMS)
     assert {s.team for s in SERVICES} <= set(TEAMS)
+
+
+def test_alert_rules_reference_known_services() -> None:
+    assert {r.service for r in RULES} <= {s.name for s in SERVICES}

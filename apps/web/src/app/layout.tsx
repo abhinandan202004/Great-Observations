@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
+import { CurrentNav, NavLinks } from "./nav";
 
 export const metadata: Metadata = {
   title: "InfraWatch",
@@ -12,15 +13,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
       <body>
-        <nav aria-label="Main">
-          <Link href="/">InfraWatch</Link>
-          <Link href="/incidents">Incidents</Link>
-          <Link href="/telemetry">Telemetry</Link>
-          <Link href="/logs">Logs</Link>
-          <Link href="/login">Sign in</Link>
-          <Link href="/admin/access-requests">Access requests</Link>
-          <Link href="/admin/sla">SLA policy</Link>
-        </nav>
+        <header className="site-header">
+          {/* The path is unknown while a page with a dynamic id prerenders: same links, unmarked. */}
+          <Suspense fallback={<NavLinks path={null} />}>
+            <CurrentNav />
+          </Suspense>
+        </header>
         {children}
       </body>
     </html>
