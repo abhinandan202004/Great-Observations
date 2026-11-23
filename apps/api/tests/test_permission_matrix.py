@@ -34,6 +34,7 @@ GATED = {
     ("POST", "/drafts/{alert_id}/dismiss"): Capability.RAISE_INCIDENT,
     ("GET", "/alert-rules"): Capability.VIEW_TELEMETRY,
     ("PUT", "/alert-rules/{rule_id}"): Capability.MANAGE_USERS_TEAMS_RULES,
+    ("GET", "/oncall"): Capability.VIEW_INCIDENT_DETAIL,
 }
 # Routes whose answer depends on how the user relates to the incident (caller, team, lead).
 # The scoped rules are unit-tested in packages/core and run live in scripts/check-incidents.sh.
@@ -43,6 +44,7 @@ SCOPED = {
     ("POST", "/incidents/{incident_id}/teams/{team_id}/assignee"),
     ("POST", "/incidents/{incident_id}/teams/{team_id}/checklist"),
     ("POST", "/incidents/{incident_id}/checklist/{item_id}"),
+    ("PUT", "/teams/{team_id}/oncall"),
 }
 # Routes that check something other than a role: the caller's sign-in, or the ingest key.
 NOT_ROLE_GATED = {

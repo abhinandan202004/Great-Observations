@@ -136,6 +136,23 @@ async def seed(database_url: str) -> None:
             ),
             [r._asdict() for r in RULES],
         )
+        # Payments has a weekly rotation; Core Infrastructure has none, to show the no-on-call flag.
+        await conn.execute(
+            text(
+                "INSERT INTO oncall_rotations (team_id, handover_local, time_zone, shift_days) "
+                "SELECT id, '2026-01-05 09:00', 'UTC', 7 FROM teams WHERE name = :team "
+                "ON CONFLICT DO NOTHING"
+            ),
+            {"team": PAYMENTS},
+        )
+        await conn.execute(
+            text(
+                "INSERT INTO oncall_members (team_id, position, user_id) "
+                "SELECT t.id, 0, u.id FROM teams t CROSS JOIN users u "
+                "WHERE t.name = :team AND u.email = :email ON CONFLICT DO NOTHING"
+            ),
+            {"team": PAYMENTS, "email": "developer@infrawatch.local"},
+        )
     await engine.dispose()
 
 

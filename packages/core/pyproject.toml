@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Pure domain logic for InfraWatch: state machine, permissions, SLA and escalation."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    # zoneinfo needs tz data, which Windows and slim images may not ship.
+    "tzdata>=2025.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14"]

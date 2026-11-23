@@ -101,6 +101,7 @@ services:
       CHANGE_WEBHOOK_SECRET: ${CHANGE_WEBHOOK_SECRET:?copy .env.example to .env}
       JWT_SECRET: ${JWT_SECRET:?copy .env.example to .env}
       DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:?copy .env.example to .env}
+      WEB_URL: http://localhost:${WEB_PORT:-3000}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -119,6 +120,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://infrawatch_app:${DB_APP_PASSWORD}@db:5432/infrawatch
       ALERT_EVAL_SECONDS: ${ALERT_EVAL_SECONDS:-15}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      MAIL_FROM: infrawatch@infrawatch.local
     depends_on:
       migrate:
         condition: service_completed_successfully

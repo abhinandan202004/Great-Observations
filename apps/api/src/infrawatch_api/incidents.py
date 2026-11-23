@@ -14,6 +14,7 @@ from infrawatch_api import access
 from infrawatch_api.access import require
 from infrawatch_api.audit import record
 from infrawatch_api.auth import current_user_id
+from infrawatch_api.notifications import notify
 from infrawatch_core import sla
 from infrawatch_core.lifecycle import (
     NEEDS_REASON,
@@ -366,6 +367,7 @@ async def open_incident(
             "alert": str(alert_id or ""),
         },
     )
+    await notify(conn, incident_id, "raised")
     return incident_id
 
 
@@ -453,6 +455,8 @@ async def change_status(
             target_id=str(incident_id),
             detail={"from": current.value, "to": body.status.value, "reason": reason or ""},
         )
+        if body.status in (Status.RESOLVED, Status.CLOSED):
+            await notify(conn, incident_id, body.status.value)
         return await load_detail(conn, incident_id)
 
 
@@ -485,6 +489,8 @@ async def change_severity(
             target_id=str(incident_id),
             detail={"from": row.severity, "to": body.severity.value},
         )
+        if row.severity != body.severity.value:
+            await notify(conn, incident_id, "severity")
         return await load_detail(conn, incident_id)
 
 
@@ -523,6 +529,7 @@ async def add_team(
             target_id=str(incident_id),
             detail={"team": team},
         )
+        await notify(conn, incident_id, "team_added", [body.team_id])
         return await load_detail(conn, incident_id)
 
 

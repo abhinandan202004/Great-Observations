@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1795033280.4298253,
-    "seen": 1795459064.467779,
-    "ast_hash": "350740bdb47773f37f0a599abfec87cc",
+    "mtime": 1795460477.723993,
+    "seen": 1795461571.6494765,
+    "ast_hash": "a115a6bd87cf370ed4d75a406e8f11cf",
     "semantic_hash": ""
   },
   "apps/agent/pyproject.toml": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/main.py": {
-    "mtime": 1795033183.1536295,
-    "seen": 1795459064.467779,
-    "ast_hash": "91c21919f1dd0084ccc31b42a2678bee",
+    "mtime": 1795460325.4726336,
+    "seen": 1795461571.6494765,
+    "ast_hash": "eb5a822efa936a073d27902010325079",
     "semantic_hash": ""
   },
   "apps/api/tests/test_api_health.py": {
@@ -144,9 +144,9 @@
     "semantic_hash": "6be0d37fecc6eb751534390b5db79811"
   },
   "apps/worker/src/infrawatch_worker/__main__.py": {
-    "mtime": 1795033095.8900738,
-    "seen": 1795459064.467779,
-    "ast_hash": "f1c4bc0dee0faff1ccbfdd77a7b47903",
+    "mtime": 1795460376.732102,
+    "seen": 1795461571.6504767,
+    "ast_hash": "e5176224afd02a6a75f9b1653ddc8977",
     "semantic_hash": ""
   },
   "apps/worker/tests/test_worker_entrypoint.py": {
@@ -156,10 +156,10 @@
     "semantic_hash": ""
   },
   "packages/core/pyproject.toml": {
-    "mtime": 1794815284.0017612,
-    "seen": 1794860559.8337994,
-    "ast_hash": "f12a38341faa253c11df46b9d99cafa8",
-    "semantic_hash": "f12a38341faa253c11df46b9d99cafa8"
+    "mtime": 1795460024.1739788,
+    "seen": 1795461571.6504767,
+    "ast_hash": "1d32f5137a495b1ae4e39e4c6549f339",
+    "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/__init__.py": {
     "mtime": 1794815284.0017612,
@@ -396,9 +396,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/seed.py": {
-    "mtime": 1795033028.860153,
-    "seen": 1795459064.467779,
-    "ast_hash": "c4e44e6c45b9bf1c655903821ce25b91",
+    "mtime": 1795460337.0723512,
+    "seen": 1795461571.6494765,
+    "ast_hash": "7d527ec2021f9d991029666c9ec482f3",
     "semantic_hash": ""
   },
   "apps/api/tests/test_seed_data.py": {
@@ -432,9 +432,9 @@
     "semantic_hash": ""
   },
   "compose.yaml": {
-    "mtime": 1795033095.895946,
-    "seen": 1795459064.467779,
-    "ast_hash": "ee0aa7c4fa32d032699184420561937c",
+    "mtime": 1795460376.734101,
+    "seen": 1795461571.6504767,
+    "ast_hash": "45811a98632f9ad51bb49d346a831b59",
     "semantic_hash": ""
   },
   "deploy/db/init-infrawatch.sh": {
@@ -612,9 +612,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_permission_matrix.py": {
-    "mtime": 1795033183.1564283,
-    "seen": 1795459064.467779,
-    "ast_hash": "7edd7b9a146a22f330ddff165dd9a5ba",
+    "mtime": 1795460325.475152,
+    "seen": 1795461571.6494765,
+    "ast_hash": "31074d005bda6857a253e585367d584c",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/policy.py": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/incidents.py": {
-    "mtime": 1795033183.1516223,
-    "seen": 1795459064.467779,
-    "ast_hash": "032b4da84a13f3e5af6d8e60c855b4aa",
+    "mtime": 1795460325.4716282,
+    "seen": 1795461571.6494765,
+    "ast_hash": "a8a22fb4a5b15d804ac94b75c1160cf8",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0006_incidents.py": {
@@ -849,6 +849,54 @@
     "mtime": 1795033279.2275455,
     "seen": 1795459064.467779,
     "ast_hash": "ca5d18fadcb3103720f79c14d22e8abe",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/migrations/versions/0009_oncall_and_outbox.py": {
+    "mtime": 1795460145.424205,
+    "seen": 1795461571.6494765,
+    "ast_hash": "4e444c35878dcca842285889d403c1a7",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/notifications.py": {
+    "mtime": 1795460969.548944,
+    "seen": 1795461571.6494765,
+    "ast_hash": "d2f99ba16f0d19bd4c38d798cf3c5fff",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/oncall.py": {
+    "mtime": 1795460405.1382172,
+    "seen": 1795461571.6494765,
+    "ast_hash": "bbbd47351a83798d541a5abf87ae8ae3",
+    "semantic_hash": ""
+  },
+  "apps/worker/src/infrawatch_worker/mail.py": {
+    "mtime": 1795460405.1382172,
+    "seen": 1795461571.6504767,
+    "ast_hash": "adfbb8863ee4b1112f3e1b7acb48815b",
+    "semantic_hash": ""
+  },
+  "apps/worker/tests/test_mail.py": {
+    "mtime": 1795460393.4742987,
+    "seen": 1795461571.6504767,
+    "ast_hash": "22cea2c7442ddeb2466b3178832e8063",
+    "semantic_hash": ""
+  },
+  "packages/core/src/infrawatch_core/oncall.py": {
+    "mtime": 1795459997.2386656,
+    "seen": 1795461571.6504767,
+    "ast_hash": "e6b67ca9447148c4481f45ef2c8de4e3",
+    "semantic_hash": ""
+  },
+  "packages/core/tests/test_oncall.py": {
+    "mtime": 1795460111.7411463,
+    "seen": 1795461571.6504767,
+    "ast_hash": "24fcb716ad56fa1d646cf86ad0de9a53",
+    "semantic_hash": ""
+  },
+  "scripts/check-notifications.sh": {
+    "mtime": 1795461169.7461953,
+    "seen": 1795461571.6504767,
+    "ast_hash": "62cfe3bfefe11e8c3854e16b7ba23bc9",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
