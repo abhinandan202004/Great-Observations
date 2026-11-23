@@ -239,3 +239,31 @@ progress {
 .file-name {
   overflow-wrap: anywhere;
 }
+
+/* Runbook text grows with what is written, between three and twenty lines; older browsers keep
+   a fixed height and scroll, which works just as well. */
+.runbook textarea {
+  field-sizing: content;
+  inline-size: 100%;
+  min-block-size: 3lh;
+  max-block-size: 20lh;
+}
+
+.runbook-fields > div {
+  margin-block-end: 0.75rem;
+}
+
+.runbook-fields dt {
+  font-weight: 600;
+}
+
+.runbook-fields dd {
+  margin-inline-start: 0;
+}
+
+/* Search terms: a colour and an underline, so the highlight never relies on colour alone. */
+::highlight(runbook-search) {
+  background-color: color-mix(in srgb, var(--series) 25%, transparent);
+  color: var(--foreground);
+  text-decoration: underline;
+}

@@ -15,6 +15,7 @@ import {
 import { AlertFigure } from "../../drafts/alert-figure";
 import { Clock } from "../clock";
 import { Attachments } from "./attachments";
+import { RunbookPanel } from "./runbook";
 
 type Act = (path: string, body: unknown) => Promise<void>;
 
@@ -159,6 +160,8 @@ function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: 
           ))}
         </>
       )}
+
+      <RunbookPanel incidentId={incident.id} status={incident.status} />
 
       <Attachments
         incidentId={incident.id}

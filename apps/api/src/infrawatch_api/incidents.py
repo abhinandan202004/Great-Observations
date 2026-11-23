@@ -25,6 +25,7 @@ from infrawatch_core.lifecycle import (
     classify,
 )
 from infrawatch_core.policy import Capability, Relation, allows, permits
+from infrawatch_core.runbook import may_close
 
 router = APIRouter(tags=["incidents"])
 
@@ -313,6 +314,24 @@ async def lock_incident(
     )
 
 
+async def runbook_approved(conn: AsyncConnection, incident_id: UUID) -> bool:
+    """The closure gate: a runbook version approved since the incident was last resolved."""
+    resolved = await conn.scalar(
+        text(
+            "SELECT max(time) FROM status_events WHERE incident_id = :id AND to_status = 'resolved'"
+        ),
+        {"id": incident_id},
+    )
+    approved = await conn.scalars(
+        text(
+            "SELECT v.created_at FROM runbook_versions v JOIN runbook_reviews r "
+            "ON r.version_id = v.id AND r.decision = 'approved' WHERE v.incident_id = :id"
+        ),
+        {"id": incident_id},
+    )
+    return may_close(resolved, approved.all())
+
+
 def ensure_open(current: Status) -> None:
     if current is Status.CLOSED:
         raise HTTPException(status.HTTP_409_CONFLICT, "A closed incident cannot change")
@@ -438,9 +457,11 @@ async def change_status(
         reason = (body.reason or "").strip() or None
         if move in NEEDS_REASON and reason is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "A reason is required")
-        if move is Move.CLOSE:
-            # shortcut: runbooks arrive in M7; until then no incident has an approved one.
-            raise HTTPException(status.HTTP_409_CONFLICT, "Closing needs an approved runbook")
+        if move is Move.CLOSE and not await runbook_approved(conn, incident_id):
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "Closing needs a runbook approved since the latest resolution",
+            )
         reopens = None
         if move is Move.REOPEN:
             reopens = await conn.scalar(
