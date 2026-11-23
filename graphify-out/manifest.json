@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1795466445.5803475,
-    "seen": 1795467254.8131387,
-    "ast_hash": "4bc654919a117ee6ec23ed83e474f8bc",
+    "mtime": 1795470030.1488135,
+    "seen": 1795470465.5249226,
+    "ast_hash": "4df199295410ed4bd90ad6c2e86ba898",
     "semantic_hash": ""
   },
   "apps/agent/pyproject.toml": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/main.py": {
-    "mtime": 1795466309.4876368,
-    "seen": 1795467254.8131387,
-    "ast_hash": "4f41351296d89bd4f10c2d4dec23af7e",
+    "mtime": 1795469942.3133903,
+    "seen": 1795470465.5249226,
+    "ast_hash": "b0eecde0d2519ff34d5e0b4c7ffab9ec",
     "semantic_hash": ""
   },
   "apps/api/tests/test_api_health.py": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "docs/phase-1-plan.md": {
-    "mtime": 1795469306.8733754,
-    "seen": 1795469317.3409462,
-    "ast_hash": "1848ec70c955116f01d2a6e570850543",
+    "mtime": 1795471053.9962516,
+    "seen": 1795471067.4904685,
+    "ast_hash": "56c38c92700f92c6113ba23e595592cb",
     "semantic_hash": ""
   },
   "docs/specification.html": {
@@ -612,15 +612,15 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_permission_matrix.py": {
-    "mtime": 1795467948.1663194,
-    "seen": 1795469317.3402696,
-    "ast_hash": "49ba23392779c9b73b355abcc633acd0",
+    "mtime": 1795469942.3157575,
+    "seen": 1795470465.5249226,
+    "ast_hash": "af009bcd54479301177602ad69504208",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/policy.py": {
-    "mtime": 1795465417.8294065,
-    "seen": 1795467254.8234186,
-    "ast_hash": "c707c6b153014687a3b1229f2842765a",
+    "mtime": 1795469861.6849082,
+    "seen": 1795470465.5249226,
+    "ast_hash": "7595417c91b0b17d81b878a44664c453",
     "semantic_hash": ""
   },
   "packages/core/tests/test_policy.py": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/incidents.py": {
-    "mtime": 1795466248.7685602,
-    "seen": 1795467254.8131387,
-    "ast_hash": "f54e4f2d8cae8564868313c6182ce5ba",
+    "mtime": 1795469942.3067262,
+    "seen": 1795470465.5249226,
+    "ast_hash": "4e0e352e5efd586bfcb606ec549d7570",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0006_incidents.py": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/incident.tsx": {
-    "mtime": 1795468284.0330484,
-    "seen": 1795469317.3402696,
-    "ast_hash": "2e3eac4ec0df715179ddd32175a33a21",
+    "mtime": 1795470763.460871,
+    "seen": 1795471067.4904685,
+    "ast_hash": "6cbb7b7dd3a9c08aef63c341ddf9dee5",
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/page.tsx": {
@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/nav.tsx": {
-    "mtime": 1795468284.0368133,
-    "seen": 1795469317.3402696,
-    "ast_hash": "3c718305a22f157d0a08e07dda135d53",
+    "mtime": 1795470763.460871,
+    "seen": 1795471067.4904685,
+    "ast_hash": "4565378715b528a1a54ee18bcb532187",
     "semantic_hash": ""
   },
   "apps/web/src/lib/drafts.test.ts": {
@@ -1005,6 +1005,66 @@
     "mtime": 1795468136.0265055,
     "seen": 1795469317.3402696,
     "ast_hash": "9b288dd7c9f145b0a3e6163545f298f4",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/migrations/versions/0012_runbooks.py": {
+    "mtime": 1795469942.650376,
+    "seen": 1795470465.5249226,
+    "ast_hash": "57c084a8ff81b0123349a1428c367130",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/runbooks.py": {
+    "mtime": 1795470708.593976,
+    "seen": 1795471067.4904685,
+    "ast_hash": "dde58a35d76413b628c82d41a706783d",
+    "semantic_hash": ""
+  },
+  "packages/core/src/infrawatch_core/runbook.py": {
+    "mtime": 1795469828.4056287,
+    "seen": 1795470465.5249226,
+    "ast_hash": "8a3de225e7136c00c40d49ed29f3f80d",
+    "semantic_hash": ""
+  },
+  "packages/core/tests/test_runbook.py": {
+    "mtime": 1795470005.7466512,
+    "seen": 1795470465.5249226,
+    "ast_hash": "239215757cbe37d81be1b239b58da0e7",
+    "semantic_hash": ""
+  },
+  "scripts/check-runbooks.sh": {
+    "mtime": 1795470026.823326,
+    "seen": 1795470465.5249226,
+    "ast_hash": "c82813f29415d9b97326f9f8a1da0c6b",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/incidents/[id]/runbook.test.tsx": {
+    "mtime": 1795470859.1412914,
+    "seen": 1795471067.4904685,
+    "ast_hash": "78974f512e0938752621e452505120e5",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/incidents/[id]/runbook.tsx": {
+    "mtime": 1795470763.460871,
+    "seen": 1795471067.4904685,
+    "ast_hash": "9f604dd5ec08cafa5842c3977aef54b1",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/runbooks/page.tsx": {
+    "mtime": 1795470687.8473802,
+    "seen": 1795471067.4904685,
+    "ast_hash": "ade0b6b40e426e38e07e24d2b328c5b4",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/runbooks.test.ts": {
+    "mtime": 1795470636.3581731,
+    "seen": 1795471067.4904685,
+    "ast_hash": "d47763c6274f2bae60ea67a76463cb9f",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/runbooks.ts": {
+    "mtime": 1795470763.460871,
+    "seen": 1795471067.4904685,
+    "ast_hash": "aaea8582275278e0a54c4f84fcfe1391",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

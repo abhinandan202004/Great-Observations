@@ -8,6 +8,7 @@ const LINKS = [
   ["/incidents", "Incidents"],
   ["/drafts", "Drafts"],
   ["/oncall", "On-call"],
+  ["/runbooks", "Runbooks"],
   ["/telemetry", "Telemetry"],
   ["/logs", "Logs"],
   ["/login", "Sign in"],
