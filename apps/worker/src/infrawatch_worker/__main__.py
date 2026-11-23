@@ -1,4 +1,4 @@
-"""Entry point: ``python -m infrawatch_worker``: the health endpoint plus the alert loop."""
+"""Entry point: ``python -m infrawatch_worker``: the health endpoint and the periodic jobs."""
 
 import asyncio
 import json
@@ -7,13 +7,17 @@ import os
 import signal
 import sys
 import threading
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_engine
 
 from infrawatch_worker import __version__
 from infrawatch_worker.alerts import evaluate
+from infrawatch_worker.mail import deliver, smtp_sender
+
+Job = Callable[[AsyncConnection], Awaitable[int]]
 
 log = logging.getLogger("infrawatch_worker")
 
@@ -35,18 +39,37 @@ class HealthHandler(BaseHTTPRequestHandler):
         self.wfile.write(HEALTH_BODY)
 
 
-async def alert_loop(database_url: str, every: float) -> None:
-    engine = create_async_engine(database_url)
+async def periodic(engine: AsyncEngine, every: float, job: Job, done: str) -> None:
+    """Run ``job`` in its own transaction every ``every`` seconds, logging what it did."""
     while True:
         try:
             async with engine.begin() as conn:
-                created = await evaluate(conn, datetime.now(UTC))
-            if created:
-                log.info("created %d alert draft(s)", created)
+                count = await job(conn)
+            if count:
+                log.info("%s: %d", done, count)
         except Exception:
-            # One bad pass (database restarting, say) must not stop alerting for good.
-            log.exception("alert evaluation failed; retrying")
+            # One bad pass (database restarting, say) must not stop the job for good.
+            log.exception("%s failed; retrying", done)
         await asyncio.sleep(every)
+
+
+async def run(database_url: str) -> None:
+    engine = create_async_engine(database_url)
+    send, sender = smtp_sender(), os.environ.get("MAIL_FROM", "infrawatch@infrawatch.local")
+    await asyncio.gather(
+        periodic(
+            engine,
+            float(os.environ.get("ALERT_EVAL_SECONDS", "15")),
+            lambda conn: evaluate(conn, datetime.now(UTC)),
+            "alert drafts created",
+        ),
+        periodic(
+            engine,
+            float(os.environ.get("MAIL_POLL_SECONDS", "5")),
+            lambda conn: deliver(conn, send, sender),
+            "emails sent",
+        ),
+    )
 
 
 def main() -> None:
@@ -56,8 +79,7 @@ def main() -> None:
     # PID 1 in a container gets no default SIGTERM handling; exit cleanly so cleanup code runs.
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    every = float(os.environ.get("ALERT_EVAL_SECONDS", "15"))
-    asyncio.run(alert_loop(os.environ["DATABASE_URL"], every))
+    asyncio.run(run(os.environ["DATABASE_URL"]))
 
 
 if __name__ == "__main__":
