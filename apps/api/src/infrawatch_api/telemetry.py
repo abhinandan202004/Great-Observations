@@ -70,6 +70,7 @@ class ChangeMarker(BaseModel):
 
 
 class LogLine(BaseModel):
+    id: UUID
     time: AwareDatetime
     service: str
     level: str
@@ -237,7 +238,7 @@ async def search_logs(
     async with engine.connect() as conn:
         rows = await conn.execute(
             text(
-                "SELECT l.time, s.name AS service, l.level, l.message, l.correlation_id"
+                "SELECT l.id, l.time, s.name AS service, l.level, l.message, l.correlation_id"
                 " FROM log_entries l JOIN services s ON s.id = l.service_id"
                 " WHERE l.time >= :since"
                 " AND (CAST(:until AS timestamptz) IS NULL OR l.time <= :until)"
