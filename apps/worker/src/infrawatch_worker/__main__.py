@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, create_async_en
 
 from infrawatch_worker import __version__
 from infrawatch_worker.alerts import evaluate
+from infrawatch_worker.escalation import sweep
 from infrawatch_worker.mail import deliver, smtp_sender
 
 Job = Callable[[AsyncConnection], Awaitable[int]]
@@ -68,6 +69,12 @@ async def run(database_url: str) -> None:
             float(os.environ.get("MAIL_POLL_SECONDS", "5")),
             lambda conn: deliver(conn, send, sender),
             "emails sent",
+        ),
+        periodic(
+            engine,
+            float(os.environ.get("ESCALATION_SWEEP_SECONDS", "15")),
+            lambda conn: sweep(conn, datetime.now(UTC)),
+            "escalations made",
         ),
     )
 

@@ -50,6 +50,9 @@ USERS = (
     DemoUser("support@infrawatch.local", "Demo Production Support", Role.PRODUCTION_SUPPORT),
     DemoUser("developer@infrawatch.local", "Demo Developer", Role.DEVELOPER, PAYMENTS, True),
     DemoUser("sre@infrawatch.local", "Demo SRE", Role.SRE, INFRA, True),
+    # Second engineers, so escalation has someone after the on-call to pass to.
+    DemoUser("developer2@infrawatch.local", "Demo Developer Two", Role.DEVELOPER, PAYMENTS),
+    DemoUser("sre2@infrawatch.local", "Demo SRE Two", Role.SRE, INFRA),
     DemoUser("admin@infrawatch.local", "Demo Admin", Role.ADMIN),
     DemoUser("commander@infrawatch.local", "Demo Incident Commander", Role.INCIDENT_COMMANDER),
     DemoUser("comms@infrawatch.local", "Demo Comms", Role.COMMS),
@@ -148,10 +151,15 @@ async def seed(database_url: str) -> None:
         await conn.execute(
             text(
                 "INSERT INTO oncall_members (team_id, position, user_id) "
-                "SELECT t.id, 0, u.id FROM teams t CROSS JOIN users u "
+                "SELECT t.id, :position, u.id FROM teams t CROSS JOIN users u "
                 "WHERE t.name = :team AND u.email = :email ON CONFLICT DO NOTHING"
             ),
-            {"team": PAYMENTS, "email": "developer@infrawatch.local"},
+            [
+                {"team": PAYMENTS, "position": i, "email": email}
+                for i, email in enumerate(
+                    ("developer@infrawatch.local", "developer2@infrawatch.local")
+                )
+            ],
         )
     await engine.dispose()
 
