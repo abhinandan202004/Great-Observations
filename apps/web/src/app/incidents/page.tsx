@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { LiveStatus } from "../live-status";
 import { getJson } from "@/lib/api";
 import { ALL, useLive } from "@/lib/live";
 import type { Summary } from "@/lib/incidents";
@@ -10,18 +11,22 @@ import { Clock } from "./clock";
 export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Summary[] | null>(null);
   const [error, setError] = useState("");
-  const { live, version } = useLive(ALL);
+  const { live, version, notice } = useLive(ALL);
 
   useEffect(() => {
+    let latest = true; // a slower, older answer must not overwrite a newer one
     getJson<Summary[]>("/incidents")
-      .then(setIncidents)
-      .catch((reason) => setError(String(reason)));
+      .then((found) => latest && setIncidents(found))
+      .catch((reason) => latest && setError(String(reason)));
+    return () => {
+      latest = false;
+    };
   }, [version]);
 
   return (
     <main className="shell wide">
       <h1>Incidents</h1>
-      <p className="status">{live ? "Live: updates appear as they happen" : "Connecting for live updates…"}</p>
+      <LiveStatus live={live} notice={notice} />
       <p>
         <Link href="/incidents/new">Raise an incident</Link>
       </p>

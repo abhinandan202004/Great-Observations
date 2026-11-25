@@ -29,11 +29,13 @@ export function RunbookPanel({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const reload = useCallback(
-    () =>
-      getJson<Runbook>(base)
-        .then(setRunbook)
-        .catch((reason) => setError(String(reason))),
+  const asked = useRef(0); // only the latest request's answer is shown
+  const reload = useCallback(() => {
+    const request = ++asked.current;
+    return getJson<Runbook>(base)
+      .then((found) => request === asked.current && setRunbook(found))
+      .catch((reason) => request === asked.current && setError(String(reason)));
+  },
     [base],
   );
   useEffect(() => {

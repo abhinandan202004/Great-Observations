@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/incident.tsx": {
-    "mtime": 1795639503.6250079,
-    "seen": 1795639962.312243,
-    "ast_hash": "9d55ca95d5ac67bf7b7dc682b97e58cc",
+    "mtime": 1795640399.9165728,
+    "seen": 1795640779.3559067,
+    "ast_hash": "83d772256d5c50a4b35aafcc00290c57",
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/page.tsx": {
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/page.tsx": {
-    "mtime": 1795639503.6290286,
-    "seen": 1795639962.312243,
-    "ast_hash": "702148063ebe43186e6b03fe52d40304",
+    "mtime": 1795640399.8884394,
+    "seen": 1795640779.3559067,
+    "ast_hash": "0e259f9103dd6a7e3027247773fb9a38",
     "semantic_hash": ""
   },
   "apps/web/src/lib/incidents.test.ts": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/attachments.tsx": {
-    "mtime": 1795638756.6838684,
-    "seen": 1795639962.312243,
-    "ast_hash": "4d3d11699b9e22ef744656dcf4bde0e8",
+    "mtime": 1795640413.1219957,
+    "seen": 1795640779.3559067,
+    "ast_hash": "dc9b1047a9883dafa1b5daa00bc6811e",
     "semantic_hash": ""
   },
   "apps/web/src/app/oncall/page.test.tsx": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/runbook.tsx": {
-    "mtime": 1795638756.6838684,
-    "seen": 1795639962.312243,
-    "ast_hash": "d1f61238b75fff49f6be40fc3b85029d",
+    "mtime": 1795640413.1219957,
+    "seen": 1795640779.3559067,
+    "ast_hash": "b33e72d09e46706efc8d78e0407a2177",
     "semantic_hash": ""
   },
   "apps/web/src/app/runbooks/page.tsx": {
@@ -1092,15 +1092,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/live.test.ts": {
-    "mtime": 1795638776.078821,
-    "seen": 1795639962.312243,
-    "ast_hash": "5484d9caa30e7e8d438093b0c495ac3c",
+    "mtime": 1795640641.9467015,
+    "seen": 1795640779.3559067,
+    "ast_hash": "3a811ce6429a0f02efbc1cd42dc97332",
     "semantic_hash": ""
   },
   "apps/web/src/lib/live.ts": {
-    "mtime": 1795638756.6790812,
-    "seen": 1795639962.312243,
-    "ast_hash": "5c720e7643161173484633564a29e06c",
+    "mtime": 1795640641.9467015,
+    "seen": 1795640779.3559067,
+    "ast_hash": "c3d0f74ea6f043339590ba359fdb1781",
     "semantic_hash": ""
   },
   "apps/worker/src/infrawatch_worker/events.py": {
@@ -1113,6 +1113,12 @@
     "mtime": 1795639290.857074,
     "seen": 1795639962.312243,
     "ast_hash": "4ef6f43c355ac794cd9cbf5a0e7b66fd",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/live-status.tsx": {
+    "mtime": 1795640399.8685114,
+    "seen": 1795640779.3559067,
+    "ast_hash": "52c363032e16c89b52f60f2678a3b762",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

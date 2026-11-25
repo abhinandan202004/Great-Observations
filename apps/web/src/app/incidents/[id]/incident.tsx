@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { LiveStatus } from "../../live-status";
 import { getJson, postJson } from "@/lib/api";
 import { useLive } from "@/lib/live";
 import {
@@ -26,16 +27,21 @@ export function Incident() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState("");
   // Any change by anyone, anywhere, brings a refetch; so does catching up after a dropped link.
-  const { live, version } = useLive(id);
+  const { live, version, notice } = useLive(id);
 
   useEffect(() => {
+    let latest = true; // a slower, older answer must not overwrite a newer one
     getJson<Summary | Detail>(`/incidents/${id}`)
       .then((found) => {
+        if (!latest) return;
         setIncident(found);
         // Only roles that see the detail may list teams; the summary view needs none.
-        if ("teams" in found) return getJson<Team[]>("/teams").then(setTeams);
+        if ("teams" in found) return getJson<Team[]>("/teams").then((t) => latest && setTeams(t));
       })
-      .catch((reason) => setError(String(reason)));
+      .catch((reason) => latest && setError(String(reason)));
+    return () => {
+      latest = false;
+    };
   }, [id, version]);
 
   // Every change returns the updated incident, so the page redraws from the API's answer.
@@ -56,7 +62,7 @@ export function Incident() {
       <h1>
         #{incident.number} {incident.title}
       </h1>
-      <p className="status">{live ? "Live: updates appear as they happen" : "Connecting for live updates…"}</p>
+      <LiveStatus live={live} notice={notice} />
       <p>
         <strong>{incident.severity}</strong> · {incident.service} · raised{" "}
         {new Date(incident.raised_at).toLocaleString()}

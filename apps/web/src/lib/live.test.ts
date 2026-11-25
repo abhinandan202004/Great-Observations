@@ -1,8 +1,12 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { backoff, useLive } from "./live";
+import { backoff, OUTAGE, RESTORED, useLive } from "./live";
 
-vi.mock("./session", () => ({ currentToken: () => "token", refreshSession: async () => true }));
+const session = vi.hoisted(() => ({ token: "token" as string | null, refresh: async () => true }));
+vi.mock("./session", () => ({
+  currentToken: () => session.token,
+  refreshSession: () => session.refresh(),
+}));
 
 class FakeSocket {
   static all: FakeSocket[] = [];
@@ -25,9 +29,12 @@ class FakeSocket {
 beforeEach(() => {
   vi.useFakeTimers();
   FakeSocket.all = [];
+  session.token = "token";
+  session.refresh = async () => true;
   vi.stubGlobal("WebSocket", FakeSocket);
 });
 afterEach(() => {
+  cleanup(); // unmount, so earlier hooks do not answer this test's events
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -88,4 +95,72 @@ it("backs off from about a second to at most thirty", () => {
   expect(backoff(0, () => 0)).toBe(500);
   expect(backoff(0, () => 1)).toBe(1000);
   expect(backoff(10, () => 1)).toBe(30_000);
+});
+
+async function opened(socket = FakeSocket.all.at(-1)!) {
+  socket.onopen?.();
+  return socket;
+}
+
+it("stops for good when the server refuses this role", async () => {
+  renderHook(() => useLive("abc"));
+  await act(async () => {});
+  const socket = await opened();
+  act(() => socket.onclose?.({ code: 4403 }));
+
+  await act(async () => {
+    vi.advanceTimersByTime(120_000);
+  });
+  expect(FakeSocket.all).toHaveLength(1);
+});
+
+it("retries when renewing the sign-in fails on the network", async () => {
+  session.token = null;
+  session.refresh = () => Promise.reject(new TypeError("Failed to fetch"));
+  renderHook(() => useLive("abc"));
+  await act(async () => {});
+  expect(FakeSocket.all).toHaveLength(0);
+
+  session.refresh = async () => {
+    session.token = "token";
+    return true;
+  };
+  await act(async () => {
+    vi.advanceTimersByTime(1000);
+  });
+  expect(FakeSocket.all).toHaveLength(1);
+});
+
+it("reconnects at once when the browser comes back online", async () => {
+  renderHook(() => useLive("abc"));
+  await act(async () => {});
+  const socket = await opened();
+  act(() => socket.onclose?.({ code: 1006 }));
+
+  await act(async () => {
+    window.dispatchEvent(new Event("online"));
+  });
+  expect(FakeSocket.all).toHaveLength(2);
+});
+
+it("announces a long outage once, and its end", async () => {
+  const { result } = renderHook(() => useLive("abc"));
+  await act(async () => {});
+  const first = await opened();
+  act(() => first.receive({ type: "subscribed", target: "abc", cursor: 1 }));
+  act(() => first.onclose?.({ code: 1006 }));
+  expect(result.current.notice).toBe("");
+
+  // Every retry fails, so the outage outlasts ten seconds.
+  await act(async () => {
+    for (let i = 0; i < 5; i++) {
+      vi.advanceTimersByTime(3000);
+      FakeSocket.all.at(-1)?.onclose?.({ code: 1006 });
+    }
+  });
+  expect(result.current.notice).toBe(OUTAGE);
+
+  const back = await opened();
+  act(() => back.receive({ type: "subscribed", target: "abc", cursor: 1 }));
+  expect(result.current.notice).toBe(RESTORED);
 });
