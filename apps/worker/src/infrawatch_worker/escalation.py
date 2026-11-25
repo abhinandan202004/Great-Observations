@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from infrawatch_core.escalation import next_escalation
 from infrawatch_core.oncall import Rotation
+from infrawatch_worker.events import publish
 
 # Every team on an incident that was never acknowledged, with how far it has escalated already.
 DUE = (
@@ -108,5 +109,6 @@ async def sweep(conn: AsyncConnection, now: datetime) -> int:
                 ),
             },
         )
+        await publish(conn, row.id, "escalation")
         made += 1
     return made

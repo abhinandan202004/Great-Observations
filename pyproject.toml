@@ -70,7 +70,7 @@ pretty = true
 
 # boto3 ships no type hints; it is confined to infrawatch_api.storage.
 [[tool.mypy.overrides]]
-module = ["boto3", "botocore.*"]
+module = ["boto3", "botocore.*", "asyncpg"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------- pytest

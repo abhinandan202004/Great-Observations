@@ -140,6 +140,9 @@ jobs:
       - name: Runbooks gate closure and are reviewed, versioned and searchable (G5.1 to G5.5)
         run: bash scripts/check-runbooks.sh
 
+      - name: Incident pages update live and recover after a dropped connection (G3.9)
+        run: docker compose exec -T api python - < scripts/check-live.py
+
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
 

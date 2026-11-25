@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1795470030.1488135,
-    "seen": 1795470465.5249226,
-    "ast_hash": "4df199295410ed4bd90ad6c2e86ba898",
+    "mtime": 1795639332.247892,
+    "seen": 1795639962.312243,
+    "ast_hash": "421570b9ddc711d721f53db70bc9ea07",
     "semantic_hash": ""
   },
   "apps/agent/pyproject.toml": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/main.py": {
-    "mtime": 1795469942.3133903,
-    "seen": 1795470465.5249226,
-    "ast_hash": "b0eecde0d2519ff34d5e0b4c7ffab9ec",
+    "mtime": 1795638598.629899,
+    "seen": 1795639962.312243,
+    "ast_hash": "e036b42a5d638c4fc20ee06560ea373d",
     "semantic_hash": ""
   },
   "apps/api/tests/test_api_health.py": {
@@ -174,9 +174,9 @@
     "semantic_hash": "2a69577ff29aa59ad88dd8e74d013f4f"
   },
   "pyproject.toml": {
-    "mtime": 1795466207.2502353,
-    "seen": 1795467254.8234186,
-    "ast_hash": "dc13bf9508d05463bbaf07194fc0385d",
+    "mtime": 1795638624.132249,
+    "seen": 1795639962.312243,
+    "ast_hash": "ca95a1a3c9512a2f47069d68a4f020fa",
     "semantic_hash": ""
   },
   "skills-lock.json": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "docs/phase-1-plan.md": {
-    "mtime": 1795471053.9962516,
-    "seen": 1795471067.4904685,
-    "ast_hash": "56c38c92700f92c6113ba23e595592cb",
+    "mtime": 1795639947.0732756,
+    "seen": 1795639962.312243,
+    "ast_hash": "c18cbb391bc2d0079ad9e864175a0538",
     "semantic_hash": ""
   },
   "docs/specification.html": {
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/access.py": {
-    "mtime": 1795465406.1539035,
-    "seen": 1795467254.8131387,
-    "ast_hash": "7ed5840c1342c7e85c7dbfbde97cc96e",
+    "mtime": 1795638624.4478946,
+    "seen": 1795639962.312243,
+    "ast_hash": "d72c9b92d237eb63c8acd6d6b566f59d",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/audit.py": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/incidents.py": {
-    "mtime": 1795469942.3067262,
-    "seen": 1795470465.5249226,
-    "ast_hash": "4e0e352e5efd586bfcb606ec549d7570",
+    "mtime": 1795638504.6874022,
+    "seen": 1795639962.312243,
+    "ast_hash": "1299529eed520138572e42513cc56e96",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0006_incidents.py": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/session.ts": {
-    "mtime": 1795465411.675837,
-    "seen": 1795467254.8234186,
-    "ast_hash": "7c88f0b57e4ec2ed2078a0657d6a137e",
+    "mtime": 1795638740.3641863,
+    "seen": 1795639962.312243,
+    "ast_hash": "cf37c2a721c7774355644c5148770aad",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/lifecycle.py": {
@@ -720,15 +720,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/incident.test.tsx": {
-    "mtime": 1795468300.7292168,
-    "seen": 1795469317.3402696,
-    "ast_hash": "e25454e9198d03674bf3bd4577fde6e3",
+    "mtime": 1795639148.035143,
+    "seen": 1795639962.312243,
+    "ast_hash": "3c2f6091136c29acb0b96d02667d65d5",
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/incident.tsx": {
-    "mtime": 1795470763.460871,
-    "seen": 1795471067.4904685,
-    "ast_hash": "6cbb7b7dd3a9c08aef63c341ddf9dee5",
+    "mtime": 1795639503.6250079,
+    "seen": 1795639962.312243,
+    "ast_hash": "9d55ca95d5ac67bf7b7dc682b97e58cc",
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/page.tsx": {
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/page.tsx": {
-    "mtime": 1795465407.620399,
-    "seen": 1795467254.8234186,
-    "ast_hash": "a76b6fdfee9954c002a06a29bcc92931",
+    "mtime": 1795639503.6290286,
+    "seen": 1795639962.312243,
+    "ast_hash": "702148063ebe43186e6b03fe52d40304",
     "semantic_hash": ""
   },
   "apps/web/src/lib/incidents.test.ts": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "apps/worker/src/infrawatch_worker/alerts.py": {
-    "mtime": 1795465413.166426,
-    "seen": 1795467254.8234186,
-    "ast_hash": "f9a25aacb309a23920482e1d01e96c39",
+    "mtime": 1795638504.683674,
+    "seen": 1795639962.312243,
+    "ast_hash": "b4926212f0a78326624f82f326b5986c",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/alerting.py": {
@@ -906,9 +906,9 @@
     "semantic_hash": ""
   },
   "apps/worker/src/infrawatch_worker/escalation.py": {
-    "mtime": 1795465413.3327491,
-    "seen": 1795467254.8234186,
-    "ast_hash": "61b2142d912f0db8f6b39f1127da8872",
+    "mtime": 1795638504.683674,
+    "seen": 1795639962.312243,
+    "ast_hash": "16f9074447b5f30ead6ea90dce75d096",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/escalation.py": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/attachments.py": {
-    "mtime": 1795466341.8297055,
-    "seen": 1795467254.8131387,
-    "ast_hash": "14bea6b5b1822edd0402331c6ad0d251",
+    "mtime": 1795638504.683674,
+    "seen": 1795639962.312243,
+    "ast_hash": "ca0d087ebcc2facb92373d67693cbcbf",
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/migrations/versions/0011_attachments.py": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/attachments.tsx": {
-    "mtime": 1795468792.1947916,
-    "seen": 1795469317.3402696,
-    "ast_hash": "8515326f99d792bdec1fab80da4382d5",
+    "mtime": 1795638756.6838684,
+    "seen": 1795639962.312243,
+    "ast_hash": "4d3d11699b9e22ef744656dcf4bde0e8",
     "semantic_hash": ""
   },
   "apps/web/src/app/oncall/page.test.tsx": {
@@ -1014,9 +1014,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrawatch_api/runbooks.py": {
-    "mtime": 1795470708.593976,
-    "seen": 1795471067.4904685,
-    "ast_hash": "dde58a35d76413b628c82d41a706783d",
+    "mtime": 1795638504.683674,
+    "seen": 1795639962.312243,
+    "ast_hash": "5315ba5312f92a4fd63032219aa5cf1d",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/runbook.py": {
@@ -1038,15 +1038,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/runbook.test.tsx": {
-    "mtime": 1795470859.1412914,
-    "seen": 1795471067.4904685,
-    "ast_hash": "78974f512e0938752621e452505120e5",
+    "mtime": 1795639102.4818103,
+    "seen": 1795639962.312243,
+    "ast_hash": "946ac0d1c81f8e96f8e8e4a20c077a0f",
     "semantic_hash": ""
   },
   "apps/web/src/app/incidents/[id]/runbook.tsx": {
-    "mtime": 1795470763.460871,
-    "seen": 1795471067.4904685,
-    "ast_hash": "9f604dd5ec08cafa5842c3977aef54b1",
+    "mtime": 1795638756.6838684,
+    "seen": 1795639962.312243,
+    "ast_hash": "d1f61238b75fff49f6be40fc3b85029d",
     "semantic_hash": ""
   },
   "apps/web/src/app/runbooks/page.tsx": {
@@ -1065,6 +1065,54 @@
     "mtime": 1795470763.460871,
     "seen": 1795471067.4904685,
     "ast_hash": "aaea8582275278e0a54c4f84fcfe1391",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/events.py": {
+    "mtime": 1795638516.892637,
+    "seen": 1795639962.312243,
+    "ast_hash": "654cd21fd39479a5d087bc3c031ac32a",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/live.py": {
+    "mtime": 1795638637.6317482,
+    "seen": 1795639962.312243,
+    "ast_hash": "2394a78b9fa04456ffb38dc9f432ce05",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrawatch_api/migrations/versions/0013_incident_events.py": {
+    "mtime": 1795638449.4907,
+    "seen": 1795639962.312243,
+    "ast_hash": "8d8d86797ea938bed72177f45aca9459",
+    "semantic_hash": ""
+  },
+  "apps/api/tests/test_live.py": {
+    "mtime": 1795639290.8580575,
+    "seen": 1795639962.312243,
+    "ast_hash": "897943bb52cfe1278f976502e546b468",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/live.test.ts": {
+    "mtime": 1795638776.078821,
+    "seen": 1795639962.312243,
+    "ast_hash": "5484d9caa30e7e8d438093b0c495ac3c",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/live.ts": {
+    "mtime": 1795638756.6790812,
+    "seen": 1795639962.312243,
+    "ast_hash": "5c720e7643161173484633564a29e06c",
+    "semantic_hash": ""
+  },
+  "apps/worker/src/infrawatch_worker/events.py": {
+    "mtime": 1795638484.9818196,
+    "seen": 1795639962.312243,
+    "ast_hash": "94f4499749e9502e606f5dbec6920364",
+    "semantic_hash": ""
+  },
+  "scripts/check-live.py": {
+    "mtime": 1795639290.857074,
+    "seen": 1795639962.312243,
+    "ast_hash": "4ef6f43c355ac794cd9cbf5a0e7b66fd",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

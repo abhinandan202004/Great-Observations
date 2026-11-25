@@ -20,6 +20,7 @@ export function Attachments(props: {
   service: string;
   raisedAt: string;
   open: boolean;
+  version: number; // goes up when the incident changed elsewhere
 }) {
   const base = `/incidents/${props.incidentId}/attachments`;
   const [list, setList] = useState<Attachment[] | null>(null);
@@ -35,7 +36,7 @@ export function Attachments(props: {
   );
   useEffect(() => {
     reload();
-  }, [reload]);
+  }, [reload, props.version]);
 
   // Every form reports through here: one status message, one error, then a fresh list.
   const added = (what: string) => async (action: Promise<unknown>) => {

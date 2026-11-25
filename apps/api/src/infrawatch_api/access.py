@@ -6,13 +6,14 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy import text
+from starlette.requests import HTTPConnection
 
 from infrawatch_api.auth import current_user_id
 from infrawatch_core.policy import Capability, allows
 from infrawatch_core.roles import Role
 
 
-async def load_roles(request: Request, user_id: UUID) -> frozenset[Role]:
+async def load_roles(request: HTTPConnection, user_id: UUID) -> frozenset[Role]:
     async with request.app.state.engine.connect() as conn:
         rows = (
             await conn.execute(

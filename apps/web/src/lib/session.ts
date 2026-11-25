@@ -1,6 +1,8 @@
 // The access token lives in memory only. The refresh token is an HttpOnly cookie that page code cannot read.
 let accessToken: string | null = null;
 
+export const currentToken = () => accessToken;
+
 export function authHeaders(): Record<string, string> {
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 }

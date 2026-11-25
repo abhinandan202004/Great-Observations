@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { getJson, postJson } from "@/lib/api";
+import { useLive } from "@/lib/live";
 import {
   type Detail,
   moves,
@@ -24,6 +25,8 @@ export function Incident() {
   const [incident, setIncident] = useState<Summary | Detail | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState("");
+  // Any change by anyone, anywhere, brings a refetch; so does catching up after a dropped link.
+  const { live, version } = useLive(id);
 
   useEffect(() => {
     getJson<Summary | Detail>(`/incidents/${id}`)
@@ -33,7 +36,7 @@ export function Incident() {
         if ("teams" in found) return getJson<Team[]>("/teams").then(setTeams);
       })
       .catch((reason) => setError(String(reason)));
-  }, [id]);
+  }, [id, version]);
 
   // Every change returns the updated incident, so the page redraws from the API's answer.
   const act: Act = async (path, body) => {
@@ -53,6 +56,7 @@ export function Incident() {
       <h1>
         #{incident.number} {incident.title}
       </h1>
+      <p className="status">{live ? "Live: updates appear as they happen" : "Connecting for live updates…"}</p>
       <p>
         <strong>{incident.severity}</strong> · {incident.service} · raised{" "}
         {new Date(incident.raised_at).toLocaleString()}
@@ -66,7 +70,7 @@ export function Incident() {
         Acknowledge: <Clock timer={incident.acknowledge} /> · Resolve:{" "}
         <Clock timer={incident.resolve} />
       </p>
-      {"teams" in incident && <Work incident={incident} teams={teams} act={act} />}
+      {"teams" in incident && <Work incident={incident} teams={teams} act={act} version={version} />}
     </main>
   );
 }
@@ -88,7 +92,17 @@ function StatusBar({ current }: { current: Summary["status"] }) {
   );
 }
 
-function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: Act }) {
+function Work({
+  incident,
+  teams,
+  act,
+  version,
+}: {
+  incident: Detail;
+  teams: Team[];
+  act: Act;
+  version: number;
+}) {
   const offered = moves(incident.status);
   const absent = teams.filter((team) => !incident.teams.some((t) => t.team_id === team.id));
   const closed = incident.status === "closed";
@@ -161,13 +175,14 @@ function Work({ incident, teams, act }: { incident: Detail; teams: Team[]; act: 
         </>
       )}
 
-      <RunbookPanel incidentId={incident.id} status={incident.status} />
+      <RunbookPanel incidentId={incident.id} status={incident.status} version={version} />
 
       <Attachments
         incidentId={incident.id}
         service={incident.service}
         raisedAt={incident.raised_at}
         open={!closed}
+        version={version}
       />
 
       <h2>Teams</h2>

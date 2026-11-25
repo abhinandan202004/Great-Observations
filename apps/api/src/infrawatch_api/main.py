@@ -1,5 +1,6 @@
 """Application factory for the InfraWatch API."""
 
+import asyncio
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -16,6 +17,7 @@ from infrawatch_api import (
     auth,
     drafts,
     incidents,
+    live,
     oncall,
     runbooks,
     telemetry,
@@ -35,7 +37,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if len(app.state.jwt_secret) < 32:
         raise RuntimeError("JWT_SECRET must be at least 32 characters")
     app.state.engine = create_async_engine(os.environ["DATABASE_URL"])
+    app.state.hub = live.Hub(app.state.engine)
+    listening = asyncio.create_task(
+        app.state.hub.run(os.environ["DATABASE_URL"].replace("+asyncpg", ""))
+    )
     yield
+    listening.cancel()
     await app.state.engine.dispose()
 
 
@@ -55,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(oncall.router)
     app.include_router(attachments.router)
     app.include_router(runbooks.router)
+    app.include_router(live.router)
 
     @app.get("/health", tags=["operations"])
     def health() -> HealthResponse:
