@@ -15,7 +15,15 @@ const TEXT_FIELDS = [
   ["workaround", "Workaround applied", "Any temporary measure, and whether it is still in place."],
 ] as const;
 
-export function RunbookPanel({ incidentId, status }: { incidentId: string; status: Status }) {
+export function RunbookPanel({
+  incidentId,
+  status,
+  version,
+}: {
+  incidentId: string;
+  status: Status;
+  version: number; // goes up when the incident changed elsewhere
+}) {
   const base = `/incidents/${incidentId}/runbook`;
   const [runbook, setRunbook] = useState<Runbook | null>(null);
   const [message, setMessage] = useState("");
@@ -30,7 +38,7 @@ export function RunbookPanel({ incidentId, status }: { incidentId: string; statu
   );
   useEffect(() => {
     reload();
-  }, [reload, status]);
+  }, [reload, status, version]);
 
   // Every action reports through here: one status message, one error, then a fresh runbook.
   const done = (what: string) => async (action: Promise<unknown>) => {

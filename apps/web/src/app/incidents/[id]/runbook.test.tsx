@@ -34,7 +34,7 @@ function answer(runbook: object) {
 
 it("offers the form at Resolved, starting from the suggested timeline", async () => {
   answer({});
-  render(<RunbookPanel incidentId="abc" status="resolved" />);
+  render(<RunbookPanel incidentId="abc" status="resolved" version={0} />);
 
   const timeline = (await screen.findByLabelText(/^Timeline/)) as HTMLTextAreaElement;
   expect(timeline.value).toBe("10:00 UTC  Raised by Support");
@@ -43,7 +43,7 @@ it("offers the form at Resolved, starting from the suggested timeline", async ()
 
 it("offers review, not the form, while a version waits", async () => {
   answer({ pending_version: 1, versions: [version] });
-  render(<RunbookPanel incidentId="abc" status="resolved" />);
+  render(<RunbookPanel incidentId="abc" status="resolved" version={0} />);
 
   expect(await screen.findByRole("button", { name: "Approve version 1" })).toBeDefined();
   expect(screen.queryByRole("button", { name: "Submit for review" })).toBeNull();
@@ -53,7 +53,7 @@ it("offers review, not the form, while a version waits", async () => {
 it("says the caller may close once approved", async () => {
   const approved = { ...version, review: { decision: "approved", reviewer: "Demo Incident Commander", reviewed_at: "2026-11-24T10:05:00Z", comment: "" } };
   answer({ may_close: true, versions: [approved] });
-  render(<RunbookPanel incidentId="abc" status="resolved" />);
+  render(<RunbookPanel incidentId="abc" status="resolved" version={0} />);
 
   expect(await screen.findByText(/the caller can now close the incident/)).toBeDefined();
   expect(screen.queryByRole("button", { name: /Approve|Submit/ })).toBeNull();

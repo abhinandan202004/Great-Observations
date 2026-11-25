@@ -13,6 +13,7 @@ from infrawatch_api import access
 from infrawatch_api.access import require
 from infrawatch_api.audit import record
 from infrawatch_api.auth import current_user_id
+from infrawatch_api.events import publish
 from infrawatch_api.incidents import lock_incident, runbook_approved
 from infrawatch_core.lifecycle import Status
 from infrawatch_core.policy import Capability, Relation, permits
@@ -243,6 +244,7 @@ async def submit_runbook(
             target_id=str(incident_id),
             detail={"version": str(version), "category": body.root_cause_category.value},
         )
+        await publish(conn, incident_id, "runbook")
     return {"version": version}
 
 
@@ -302,6 +304,7 @@ async def review_runbook(
             target_id=str(incident_id),
             detail={"version": str(version), "comment": comment},
         )
+        await publish(conn, incident_id, "runbook")
     return {"decision": body.decision}
 
 

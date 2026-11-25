@@ -17,6 +17,7 @@ from infrawatch_api import access, storage
 from infrawatch_api.access import require
 from infrawatch_api.audit import record
 from infrawatch_api.auth import current_user_id
+from infrawatch_api.events import publish
 from infrawatch_api.incidents import ensure_open, lock_incident
 from infrawatch_core.files import MAX_BYTES, sniff
 from infrawatch_core.policy import Capability, permits
@@ -106,6 +107,7 @@ async def _add(
         target_id=str(incident_id),
         detail={"attachment": str(attachment_id), "kind": kind, "title": title},
     )
+    await publish(conn, incident_id, "attachment")
     return attachment_id
 
 

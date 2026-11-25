@@ -8,6 +8,7 @@ from sqlalchemy import Row, text
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from infrawatch_core.alerting import Comparator, Rule, firing_since
+from infrawatch_worker.events import publish
 
 STALE = timedelta(seconds=60)  # no sample for this long means the data stopped
 CONTEXT = timedelta(minutes=10)  # extra history kept in the snapshot, before the breach
@@ -47,15 +48,21 @@ async def _fire(
     # The open alert for this rule: a draft, or one raised into an incident that is not closed.
     folded = await conn.execute(
         text(
+            "WITH open AS (SELECT a.id, a.last_fired_at FROM alerts a WHERE a.rule_id = :rule "
+            "AND (a.state = 'draft' OR (a.state = 'raised' AND EXISTS (SELECT 1 FROM incidents i "
+            "WHERE i.id = a.incident_id AND i.status <> 'closed'))) FOR UPDATE) "
             "UPDATE alerts a SET last_fired_at = :newest, "
-            "fire_count = fire_count + CASE WHEN :start > a.last_fired_at THEN 1 ELSE 0 END "
-            "WHERE a.rule_id = :rule AND (a.state = 'draft' OR (a.state = 'raised' AND EXISTS "
-            "(SELECT 1 FROM incidents i WHERE i.id = a.incident_id AND i.status <> 'closed'))) "
-            "RETURNING a.id"
+            "fire_count = fire_count + CASE WHEN :start > open.last_fired_at THEN 1 ELSE 0 END "
+            "FROM open WHERE a.id = open.id "
+            "RETURNING a.id, a.incident_id, :start > open.last_fired_at AS new_breach"
         ),
         {"rule": rule.id, "start": start, "newest": newest},
     )
-    if folded.first() is not None:
+    existing = folded.first()
+    if existing is not None:
+        # A new breach folded into a raised incident shows on its page as a higher count.
+        if existing.incident_id is not None and existing.new_breach:
+            await publish(conn, existing.incident_id, "alert")
         return 0
     snapshot = [{"time": t.isoformat(), "value": v} for t, v in samples]
     inserted = await conn.execute(

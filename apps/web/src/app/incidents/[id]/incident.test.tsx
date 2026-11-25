@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Incident } from "./incident";
 
 vi.mock("next/navigation", () => ({ useParams: () => ({ id: "abc" }) }));
+// The live connection has its own tests; here it stays quiet.
+vi.mock("@/lib/live", () => ({ useLive: () => ({ live: false, version: 0 }) }));
 // jsdom has no canvas; the figure's caption and table carry the same information.
 vi.mock("../../telemetry/chart", () => ({ Chart: () => null }));
 afterEach(() => {
