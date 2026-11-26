@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1795639332.247892,
-    "seen": 1795639962.312243,
-    "ast_hash": "421570b9ddc711d721f53db70bc9ea07",
+    "mtime": 1795719103.0699563,
+    "seen": 1795719130.5292916,
+    "ast_hash": "16fe8c0e2558d3fd69c91179506c94a1",
     "semantic_hash": ""
   },
   "apps/agent/pyproject.toml": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "apps/web/package.json": {
-    "mtime": 1794907523.073349,
-    "seen": 1794908080.4571304,
-    "ast_hash": "75efe91055f18228fdd2839609448740",
+    "mtime": 1795717699.079331,
+    "seen": 1795719130.5292916,
+    "ast_hash": "fd36a859db1439bd528f3f683337fb85",
     "semantic_hash": ""
   },
   "apps/web/src/app/layout.tsx": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "docs/phase-1-plan.md": {
-    "mtime": 1795639947.0732756,
-    "seen": 1795639962.312243,
-    "ast_hash": "c18cbb391bc2d0079ad9e864175a0538",
+    "mtime": 1795719103.0787592,
+    "seen": 1795719130.5302906,
+    "ast_hash": "bf63dc0b8e6400d680ff3fc914d69c07",
     "semantic_hash": ""
   },
   "docs/specification.html": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/session.ts": {
-    "mtime": 1795638740.3641863,
-    "seen": 1795639962.312243,
-    "ast_hash": "cf37c2a721c7774355644c5148770aad",
+    "mtime": 1795718343.6454434,
+    "seen": 1795719130.5302906,
+    "ast_hash": "45539443c91cbcc6a7c50f0c494413a7",
     "semantic_hash": ""
   },
   "packages/core/src/infrawatch_core/lifecycle.py": {
@@ -1121,10 +1121,34 @@
     "ast_hash": "52c363032e16c89b52f60f2678a3b762",
     "semantic_hash": ""
   },
+  "apps/web/e2e/full-loop.spec.ts": {
+    "mtime": 1795717659.9292977,
+    "seen": 1795719130.5292916,
+    "ast_hash": "d2c2a15f81873859dcb6173ca526e0d5",
+    "semantic_hash": ""
+  },
+  "apps/web/e2e/stack.ts": {
+    "mtime": 1795717597.8753853,
+    "seen": 1795719130.5292916,
+    "ast_hash": "d35bca330b2d192d1dc23070bb85a14c",
+    "semantic_hash": ""
+  },
+  "apps/web/playwright.config.ts": {
+    "mtime": 1795719103.0716796,
+    "seen": 1795719130.5292916,
+    "ast_hash": "5a2da1ab889ac8036bdd48c528b74339",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/session.test.ts": {
+    "mtime": 1795718344.097167,
+    "seen": 1795719130.5302906,
+    "ast_hash": "c19abb32570340c516df062f18678d27",
+    "semantic_hash": ""
+  },
   "apps/web/package-lock.json": {
-    "mtime": 1794907523.0566862,
-    "seen": 1794908080.4571304,
-    "ast_hash": "7b8289a984e2a765908658ceabf24d6e",
+    "mtime": 1795717268.3963187,
+    "seen": 1795719130.5302906,
+    "ast_hash": "b17dd0814439aa0d6251e126668dba66",
     "semantic_hash": ""
   }
 }

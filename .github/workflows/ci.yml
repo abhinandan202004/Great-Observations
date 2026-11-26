@@ -146,6 +146,34 @@ jobs:
       - name: Telemetry arrives and is served to the web app, faults show within 60 s, nothing lost across an outage (G1.1 to G1.6)
         run: bash scripts/check-telemetry.sh
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22.19.0"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Playwright and Chromium
+        working-directory: apps/web
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: The full loop in a browser, fault to closure, with live updates and a dropped connection (G9.3, G3.9)
+        working-directory: apps/web
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Keep the Playwright report and trace
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7
+
       - name: Show service state and logs
         if: failure()
         run: |
